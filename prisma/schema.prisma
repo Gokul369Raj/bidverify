@@ -1,0 +1,622 @@
+// SIH26100 — AI-Powered Integrated Bid Compliance Verification Platform
+// Supabase PostgreSQL database.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Roles:
+// SUPER_ADMIN | PROCUREMENT_OFFICER | BID_EVALUATION_OFFICER | COMPLIANCE_REVIEWER | AUDITOR | SYSTEM_ADMIN | BIDDER
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  phone          String?
+  aadharNumber   String?
+  passwordHash   String?
+  authProvider   String    @default("EMAIL") // EMAIL | GOOGLE
+  googleId       String?   @unique
+  role           String    @default("BIDDER")
+  emailVerifiedAt DateTime?
+  isActive       Boolean   @default(true)
+  loginCount     Int       @default(0)
+  lastLoginAt    DateTime?
+  lastLoginIp    String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  passwordResets PasswordReset[]
+  savedTenders   SavedTender[]
+  vaultDocuments DocumentVault[]
+  applications   Application[]
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Organization {
+  id                 String    @id @default(cuid())
+  legalName          String
+  tradeName          String?
+  pan                String?
+  gstin              String?
+  udyamNumber        String?
+  cin                String?
+  registeredAddress  String?   @db.Text
+  state              String?
+  city               String?
+  pincode            String?
+  phone              String?
+  organizationType   String?   // PRIVATE_LIMITED | PUBLIC_LIMITED | LLP | PROPRIETORSHIP | PARTNERSHIP
+  incorporationDate  DateTime?
+  businessCategory   String?   // MANUFACTURER | TRADER | SERVICE_PROVIDER | CONSULTANT
+  isOem              Boolean   @default(false)
+  isStartup          Boolean   @default(false)
+  isMsme             Boolean   @default(false)
+  annualTurnoverLakh Float?
+  fieldStatusJson    Json      @default("{}")
+  users              User[]
+  bids               BidSubmission[]
+  vaultDocuments     DocumentVault[]
+  applications       Application[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model Tender {
+  id                 String    @id @default(cuid())
+  tenderNumber       String    @unique
+  title              String
+  description        String    @default("") @db.Text
+  buyerOrganization  String
+  department         String?
+  category           String?
+  state              String?
+  city               String?
+  publishDate        DateTime
+  closingDate        DateTime
+  source             String    @default("MOCK_GEM")
+  sourceUrl          String?
+  dataLabel          String    @default("DEMO_SIMULATED")
+  emdAmount          Float?
+  estimatedValueLakh Float?
+  status             String    @default("ACTIVE")
+  aiAnalysisStatus   String    @default("PENDING")
+  aiProvider         String?
+  requirementsFrozen Boolean   @default(false)
+  createdById        String?
+  documents          TenderDocument[]
+  requirements       TenderRequirement[]
+  requirementConfigs TenderRequirementConfig[]
+  corrigenda         Corrigendum[]
+  bids               BidSubmission[]
+  applications       Application[]
+  savedBy            SavedTender[]
+  reports            Report[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model TenderDocument {
+  id           String   @id @default(cuid())
+  tenderId     String
+  tender       Tender   @relation(fields: [tenderId], references: [id])
+  fileName     String
+  fileType     String
+  fileSize     Int
+  storagePath  String
+  sha256       String
+  docKind      String   @default("TENDER_DOCUMENT")
+  pageCount    Int?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+}
+
+model TenderRequirement {
+  id               String   @id @default(cuid())
+  tenderId         String
+  tender           Tender   @relation(fields: [tenderId], references: [id])
+  code             String
+  type             String
+  title            String
+  description      String   @default("") @db.Text
+  mandatory        Boolean  @default(true)
+  evidenceRequired Boolean  @default(true)
+  paramsJson       Json     @default("{}")
+  sourceDocument   String?
+  page             Int?
+  sourceText       String?  @db.Text
+  confidence       Float?
+  extractionMethod String   @default("AI")
+  status           String   @default("DRAFT")
+  approvedById     String?
+  approvedAt       DateTime?
+  complianceResults ComplianceResult[]
+  config            TenderRequirementConfig?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenderId, code])
+}
+
+model Corrigendum {
+  id                String   @id @default(cuid())
+  tenderId          String
+  tender            Tender   @relation(fields: [tenderId], references: [id])
+  corrigendumNumber String
+  title             String   @default("")
+  publishedAt       DateTime @default(now())
+  fileName          String?
+  storagePath       String?
+  changesJson       Json     @default("[]")
+  applied           Boolean  @default(false)
+  approvedById      String?
+  createdAt         DateTime @default(now())
+}
+
+model SavedTender {
+  userId   String
+  tenderId String
+  user     User     @relation(fields: [userId], references: [id])
+  tender   Tender   @relation(fields: [tenderId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([userId, tenderId])
+}
+
+model BidSubmission {
+  id                  String    @id @default(cuid())
+  tenderId            String
+  tender              Tender    @relation(fields: [tenderId], references: [id])
+  organizationId      String
+  organization        Organization @relation(fields: [organizationId], references: [id])
+  bidNumber           String    @unique
+  status              String    @default("DRAFT")
+  submittedAt         DateTime?
+  application         Application?
+  complianceScore     Float?
+  riskLevel           String?
+  riskScore           Float?
+  aiRecommendation    String?   @db.Text
+  aiRecommendationJson Json?
+  officerDecision     String?
+  decisionById        String?
+  decisionAt          DateTime?
+  decisionNotes       String?   @db.Text
+  documents           BidDocument[]
+  verifications       VerificationResult[]
+  complianceResults   ComplianceResult[]
+  evidences           EvidenceItem[]
+  anomalies           Anomaly[]
+  risks               RiskScore[]
+  reports             Report[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@unique([tenderId, organizationId])
+}
+
+model BidDocument {
+  id                       String   @id @default(cuid())
+  submissionId             String
+  submission               BidSubmission @relation(fields: [submissionId], references: [id])
+  organizationId           String
+  docType                  String
+  docTypeSource            String   @default("AI")
+  fileName                 String
+  fileType                 String
+  fileSize                 Int
+  storagePath              String
+  sha256                   String
+  status                   String   @default("UPLOADED")
+  score                    Float?
+  classificationConfidence Float?
+  processingError          String?  @db.Text
+  fields                   ExtractedField[]
+  uploadedById             String?
+  createdAt                DateTime @default(now())
+  processedAt              DateTime?
+}
+
+model ExtractedField {
+  id             String   @id @default(cuid())
+  documentId     String
+  document       BidDocument @relation(fields: [documentId], references: [id])
+  field          String
+  value          String   @db.Text
+  page           Int?
+  boundingBoxJson Json?
+  confidence     Float?
+  source         String   @default("AI")
+  createdAt      DateTime @default(now())
+}
+
+model VerificationResult {
+  id            String   @id @default(cuid())
+  submissionId  String
+  submission    BidSubmission @relation(fields: [submissionId], references: [id])
+  provider      String
+  status        String
+  simulated     Boolean  @default(true)
+  requestedJson Json?
+  returnedJson  Json?
+  matchStatus   String?
+  source        String?
+  referenceId   String?
+  confidence    Float?
+  evidenceJson  Json?
+  checkedAt     DateTime @default(now())
+}
+
+model ComplianceRule {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  description     String   @default("") @db.Text
+  requirementType String
+  expressionJson  Json     @default("{}")
+  weight          Float    @default(1.0)
+  version         Int      @default(1)
+  effectiveFrom   DateTime @default(now())
+  active          Boolean  @default(true)
+  source          String   @default("SYSTEM")
+  createdById     String?
+  approvedById    String?
+  history         ComplianceRuleHistory[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ComplianceRuleHistory {
+  id          String   @id @default(cuid())
+  ruleId      String
+  rule        ComplianceRule @relation(fields: [ruleId], references: [id])
+  version     Int
+  changedById String?
+  changeJson  Json     @default("{}")
+  reason      String?
+  createdAt   DateTime @default(now())
+}
+
+model ComplianceResult {
+  id             String   @id @default(cuid())
+  submissionId   String
+  submission     BidSubmission @relation(fields: [submissionId], references: [id])
+  requirementId  String
+  requirement    TenderRequirement @relation(fields: [requirementId], references: [id])
+  ruleCode       String?
+  ruleVersion    Int?
+  result         String
+  explanation    String   @default("") @db.Text
+  detailsJson    Json     @default("{}")
+  overridden     Boolean  @default(false)
+  overrideById   String?
+  overrideReason String?  @db.Text
+  overrideResult String?
+  overrideAt     DateTime?
+  evaluatedAt    DateTime @default(now())
+  evidences      EvidenceItem[]
+}
+
+model EvidenceItem {
+  id                String   @id @default(cuid())
+  submissionId      String
+  submission        BidSubmission @relation(fields: [submissionId], references: [id])
+  requirementId     String?
+  complianceResultId String?
+  complianceResult  ComplianceResult? @relation(fields: [complianceResultId], references: [id])
+  kind              String
+  documentId        String?
+  verificationId    String?
+  label             String
+  page              Int?
+  extractedValue    String?  @db.Text
+  officialValue     String?  @db.Text
+  comparisonJson    Json?
+  createdAt         DateTime @default(now())
+}
+
+model Anomaly {
+  id           String   @id @default(cuid())
+  submissionId String
+  submission   BidSubmission @relation(fields: [submissionId], references: [id])
+  kind         String
+  severity     String   @default("MEDIUM")
+  description  String   @db.Text
+  status       String   @default("OPEN")
+  resolvedById String?
+  resolvedAt   DateTime?
+  resolution   String?  @db.Text
+  createdAt    DateTime @default(now())
+}
+
+model RiskScore {
+  id           String   @id @default(cuid())
+  submissionId String
+  submission   BidSubmission @relation(fields: [submissionId], references: [id])
+  score        Float
+  level        String
+  factorsJson  Json     @default("[]")
+  method       String   @default("DETERMINISTIC_V1")
+  calculatedAt DateTime @default(now())
+}
+
+model AiRun {
+  id            String   @id @default(cuid())
+  task          String
+  provider      String
+  model         String
+  status        String   @default("RUNNING")
+  inputRefJson  Json?
+  outputJson    Json?
+  tokensUsed    Int?
+  durationMs    Int?
+  error         String?  @db.Text
+  createdById   String?
+  createdAt     DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  body      String   @default("") @db.Text
+  kind      String   @default("INFO")
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id            String    @id @default(cuid())
+  submissionId  String?
+  submission    BidSubmission? @relation(fields: [submissionId], references: [id])
+  tenderId      String?
+  tender        Tender?   @relation(fields: [tenderId], references: [id])
+  kind          String
+  format        String
+  payloadJson   Json
+  generatedById String?
+  createdAt     DateTime  @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorEmail String   @default("system")
+  actorRole  String   @default("SYSTEM")
+  action     String
+  entityType String
+  entityId   String?
+  beforeJson Json?
+  afterJson  Json?
+  reason     String?  @db.Text
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model ApiIntegration {
+  id               String   @id @default(cuid())
+  provider         String   @unique
+  clientIdEnc      String?
+  clientSecretEnc  String?
+  apiKeyEnc        String?
+  endpoint         String?
+  environment      String   @default("SANDBOX")
+  status           String   @default("NOT_CONFIGURED")
+  configJson       Json     @default("{}")
+  updatedAt        DateTime @updatedAt
+}
+
+model MockRegistry {
+  id       String @id @default(cuid())
+  registry String
+  key      String
+  dataJson Json   @default("{}")
+
+  @@unique([registry, key])
+}
+
+// ══════════════════════════════════════════════════════════════
+// DOCUMENT VAULT — reusable organization-level document storage
+// ══════════════════════════════════════════════════════════════
+
+model DocumentVault {
+  id                String    @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  uploadedById      String?
+  uploadedBy        User?     @relation(fields: [uploadedById], references: [id])
+  docType           String    // GST_CERTIFICATE, PAN_CARD, etc.
+  documentCategory  String    @default("IDENTITY") // IDENTITY | FINANCIAL | EXPERIENCE | TECHNICAL | OTHER
+  fileName          String
+  originalFileName  String
+  fileType          String
+  fileSize          Int
+  storagePath       String
+  sha256            String
+  version           Int       @default(1)
+  previousVersionId String?   @unique
+  previousVersion   DocumentVault? @relation("VaultVersionChain", fields: [previousVersionId], references: [id])
+  // Extracted metadata
+  issuingOrg        String?
+  documentNumber    String?
+  registrationNumber String?
+  gstin             String?
+  pan               String?
+  issueDate         DateTime?
+  expiryDate        DateTime?
+  address           String?   @db.Text
+  authorizedPerson  String?
+  // Status
+  status            String    @default("UPLOADED") // UPLOADED | PROCESSING | PROCESSED | VERIFIED | NEEDS_REVIEW | EXPIRED | INVALID | FAILED
+  verificationStatus String   @default("NOT_VERIFIED") // NOT_VERIFIED | VERIFIED | FAILED | NEEDS_REVIEW
+  classificationConfidence Float?
+  processingError   String?   @db.Text
+  intelligenceScore Int?
+  intelligenceJson  String?   @db.Text
+  isActive          Boolean   @default(true)
+  // Relations
+  versions          DocumentVault[] @relation("VaultVersionChain")
+  extractions       VaultDocumentExtraction[]
+  applications      ApplicationDocument[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([organizationId])
+  @@index([docType])
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model VaultDocumentExtraction {
+  id             String   @id @default(cuid())
+  vaultDocumentId String
+  vaultDocument  DocumentVault @relation(fields: [vaultDocumentId], references: [id])
+  field          String
+  value          String   @db.Text
+  page           Int?
+  confidence     Float?
+  source         String   @default("AI")
+  createdAt      DateTime @default(now())
+}
+
+// ══════════════════════════════════════════════════════════════
+// TENDER REQUIREMENT CONFIG — dynamic requirement-to-document mapping
+// ══════════════════════════════════════════════════════════════
+
+model TenderRequirementConfig {
+  id                  String   @id @default(cuid())
+  tenderId            String
+  tender              Tender   @relation(fields: [tenderId], references: [id])
+  requirementId       String?   @unique
+  requirement         TenderRequirement? @relation(fields: [requirementId], references: [id])
+  requirementCode     String
+  requirementTitle    String
+  requirementType     String
+  mandatory           Boolean  @default(true)
+  description         String   @default("") @db.Text
+  allowedDocTypes     Json     @default("[]") // ["GST_CERTIFICATE", "PAN_CARD", ...]
+  multipleDocumentsAllowed Boolean @default(false)
+  eligibilityCondition Json   @default("{}")
+  expiryRequired      Boolean  @default(false)
+  verificationRequired Boolean @default(false)
+  declarationRequired Boolean  @default(false)
+  formFieldsSchema    Json     @default("[]") // dynamic form fields for this requirement
+  status              String   @default("ACTIVE") // ACTIVE | FROZEN | ARCHIVED
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([tenderId])
+  @@unique([tenderId, requirementCode])
+}
+
+// ══════════════════════════════════════════════════════════════
+// APPLICATION — tender-specific bid application
+// ══════════════════════════════════════════════════════════════
+
+model Application {
+  id                    String   @id @default(cuid())
+  tenderId              String
+  tender                Tender   @relation(fields: [tenderId], references: [id])
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id])
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id])
+  bidSubmissionId       String?   @unique
+  bidSubmission         BidSubmission? @relation(fields: [bidSubmissionId], references: [id])
+  applicationNumber     String   @unique
+  status                String   @default("DRAFT") // DRAFT | IN_PROGRESS | READY | SUBMITTED | UNDER_REVIEW | DECIDED
+  progressPercent       Float    @default(0)
+  // Profile snapshot at submission
+  profileSnapshot       Json     @default("{}")
+  // Tender requirement snapshot at submission
+  requirementSnapshot   Json     @default("{}")
+  // Form values snapshot
+  formValuesSnapshot    Json     @default("{}")
+  declarationSnapshot   Json     @default("{}")
+  submittedAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  documents             ApplicationDocument[]
+  formValues            ApplicationFormValue[]
+
+  @@index([tenderId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ApplicationDocument {
+  id              String   @id @default(cuid())
+  applicationId   String
+  application     Application @relation(fields: [applicationId], references: [id])
+  vaultDocumentId String?
+  vaultDocument   DocumentVault? @relation(fields: [vaultDocumentId], references: [id])
+  requirementConfigId String?
+  requirementCode String?
+  matchType       String   @default("AUTO") // AUTO | MANUAL | UPLOADED
+  matchConfidence Float?
+  matchReason     String?  @db.Text
+  // For manually uploaded docs (not from vault)
+  uploadedFileName String?
+  uploadedFileType String?
+  uploadedFileSize Int?
+  uploadedStoragePath String?
+  uploadedSha256  String?
+  // Snapshot at submission time
+  docTypeSnapshot String
+  fileNameSnapshot String
+  sha256Snapshot  String
+  versionSnapshot Int?
+  status          String   @default("ATTACHED") // ATTACHED | VERIFIED | REJECTED | EXPIRED | MISSING
+  createdAt       DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([vaultDocumentId])
+}
+
+model ApplicationFormValue {
+  id              String   @id @default(cuid())
+  applicationId   String
+  application     Application @relation(fields: [applicationId], references: [id])
+  fieldKey        String
+  fieldValue      String   @default("") @db.Text
+  autoFilled      Boolean  @default(false)
+  autoFillSource  String?  // "organization_profile" | "document_extraction"
+  required        Boolean  @default(false)
+  label           String   @default("")
+  fieldType       String   @default("text") // text | number | date | select | textarea | checkbox
+  options         Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([applicationId])
+  @@unique([applicationId, fieldKey])
+}
+
+// ══════════════════════════════════════════════════════════════
+
+// Extend existing models with new relations
+// ══════════════════════════════════════════════════════════════
