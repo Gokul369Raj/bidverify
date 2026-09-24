@@ -116,18 +116,10 @@ export async function POST(req: Request) {
 
     let ocrText = "";
     try {
-      const { execSync } = await import("child_process");
-      const os = await import("os");
-      const path = await import("path");
-      const fs = await import("fs");
-      const tmpDir = os.tmpdir();
-      const tmpFile = path.join(tmpDir, `ocr_${Date.now()}.pdf`);
-      fs.writeFileSync(tmpFile, buffer);
-      try {
-        ocrText = execSync(`pdftotext "${tmpFile}" - 2>/dev/null`, { timeout: 15000, maxBuffer: 5 * 1024 * 1024 }).toString();
-      } catch {}
-      try { fs.unlinkSync(tmpFile); } catch {}
-    } catch {}
+      const pdfParse = (await import("pdf-parse")).default;
+      const pdfData = await pdfParse(buffer);
+      ocrText = pdfData.text || "";
+    } catch { /* no text */ }
 
     await audit({
       actor: session,

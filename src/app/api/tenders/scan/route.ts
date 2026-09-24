@@ -3,6 +3,7 @@ import { ok, fail, handle } from "@/lib/api";
 /**
  * POST — Scan a tender PDF, extract text, and return parsed fields.
  * Does NOT create anything — just returns extracted data for auto-fill.
+ * Uses pdf-parse (JS) instead of pdftotext (system binary) for Vercel compat.
  */
 export async function POST(req: Request) {
   return handle(async () => {
@@ -12,23 +13,17 @@ export async function POST(req: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Extract text via pdftotext
     let ocrText = "";
     try {
-      const { execSync } = await import("child_process");
-      const os = await import("os");
-      const path = await import("path");
-      const fs = await import("fs");
-      const tmpFile = require("path").join(os.tmpdir(), `scan_${Date.now()}.pdf`);
-      fs.writeFileSync(tmpFile, buffer);
+      const pdfParse = (await import("pdf-parse")).default;
+      const pdfData = await pdfParse(buffer);
+      ocrText = pdfData.text || "";
+    } catch {
+      // Fallback: try native PDF text extraction
       try {
-        ocrText = execSync(`pdftotext "${tmpFile}" - 2>/dev/null`, {
-          timeout: 15000,
-          maxBuffer: 5 * 1024 * 1024,
-        }).toString();
-      } catch {}
-      try { fs.unlinkSync(tmpFile); } catch {}
-    } catch {}
+        ocrText = extractNativePdfText(buffer);
+      } catch { /* no text available */ }
+    }
 
     // Parse fields from OCR text
     const fields = parseTenderFields(ocrText);
@@ -191,4 +186,21 @@ function parseTenderFields(text: string) {
     state,
     requiredDocs,
   };
+}
+
+/** Native PDF text extraction — reads BT...ET text blocks from raw PDF bytes */
+function extractNativePdfText(buffer: Buffer): string {
+  const text = buffer.toString("latin1");
+  const texts: string[] = [];
+  const btEtRegex = /BT\b([\s\S]*?)ET\b/g;
+  let match;
+  while ((match = btEtRegex.exec(text)) !== null) {
+    const block = match[1];
+    const tjRegex = /\(([^)]*)\)\s*Tj/g;
+    let tjMatch;
+    while ((tjMatch = tjRegex.exec(block)) !== null) {
+      texts.push(tjMatch[1]);
+    }
+  }
+  return texts.join(" ");
 }

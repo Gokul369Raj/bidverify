@@ -985,17 +985,17 @@ export async function validateDocumentContentWithOcr(
       if (isImage) {
         return await ocrImage(buffer);
       } else if (isPdf) {
-        // For scanned/encrypted PDFs: renderAndOcrPdf (pdftoppm + tesseract.js) is MORE RELIABLE
-        // because it renders pages as images first, bypassing complex PDF stream extraction.
-        // Try renderAndOcrPdf FIRST, then fall back to raw image extraction.
+        // Try async PDF render+OCR first, then fall back to raw image extraction
         try {
-          const rendered = await renderAndOcrPdf(buffer, 3);
+          const { renderAndOcrPdfAsync } = await import("@/lib/verify/ocr");
+          const rendered = await renderAndOcrPdfAsync(buffer, 3);
           if (rendered.text.length > 10) {
             return { text: rendered.text, confidence: rendered.confidence, words: 0 };
           }
         } catch {}
         // Fallback: try raw image extraction from PDF streams
-        const result = await ocrPdfImages(buffer, 3);
+        const { ocrPdfImagesAsync } = await import("@/lib/verify/ocr");
+        const result = await ocrPdfImagesAsync(buffer, 3);
         if (result.text.length > 10) {
           return { text: result.text, confidence: result.confidence, words: 0 };
         }

@@ -362,11 +362,11 @@ export async function runVerificationPipeline(input: PipelineInput): Promise<Pip
     const { validateDocumentContentWithOcr } = await import("@/lib/verify/contentValidator");
     
     const contentResult = await validateDocumentContentWithOcr(processedBuffer, input.declaredDocType, input.fileName);
-    // If no text extracted, try pdftoppm render + tesseract.js OCR as fallback
+    // If no text extracted, try async OCR fallback
     if ((!contentResult.extractedText || contentResult.extractedText.length < 10) && isPdf) {
       try {
-        const { renderAndOcrPdf } = await import("@/lib/verify/ocr");
-        const rendered = await renderAndOcrPdf(processedBuffer, 3);
+        const { renderAndOcrPdfAsync } = await import("@/lib/verify/ocr");
+        const rendered = await renderAndOcrPdfAsync(processedBuffer, 3);
         if (rendered.text.length > 10) {
           contentResult.extractedText = rendered.text;
           contentResult.hasTextContent = true;

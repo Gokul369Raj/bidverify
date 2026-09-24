@@ -622,18 +622,21 @@ function extractPdfTextNative(buf: Buffer): { text: string; pageCount: number } 
 
 async function ocrBuffer(buffer: Buffer, isPdf: boolean): Promise<{ text: string; confidence: number }> {
   try {
-    const { ocrImage, renderAndOcrPdf } = await import("./ocr");
+    const { ocrImageAsync, renderAndOcrPdfAsync, ocrPdfImagesAsync } = await import("./ocr");
     if (isPdf) {
       try {
-        const rendered = renderAndOcrPdf(buffer, 3);
+        const rendered = await renderAndOcrPdfAsync(buffer, 3);
         if (rendered.text.length > 10) {
           return { text: rendered.text, confidence: rendered.confidence };
         }
       } catch {}
-      const result = ocrImage(buffer);
-      return { text: result.text, confidence: result.confidence };
+      const imgResult = await ocrPdfImagesAsync(buffer, 3);
+      if (imgResult.text.length > 10) {
+        return { text: imgResult.text, confidence: imgResult.confidence };
+      }
+      return { text: "", confidence: 0 };
     }
-    const result = ocrImage(buffer);
+    const result = await ocrImageAsync(buffer);
     return { text: result.text, confidence: result.confidence };
   } catch {
     return { text: "", confidence: 0 };
