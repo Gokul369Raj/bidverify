@@ -108,7 +108,7 @@ function parseTenderFields(text: string) {
 
   const buyerOrganization = extracted.buyerOrganization || "";
   let closingDate = extracted.closingDate || "";
-  let category = extracted.category || "";
+  const category = extracted.category || "";
 
   // Closing Date — try full-text regex as fallback
   if (!closingDate) {
