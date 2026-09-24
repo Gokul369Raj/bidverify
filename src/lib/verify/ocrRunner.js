@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Standalone OCR runner — called as child process from ocr.ts
 // Usage: node ocrRunner.js <image_path>
 const fs = require('fs');

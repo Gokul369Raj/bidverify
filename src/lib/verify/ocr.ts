@@ -25,17 +25,7 @@ async function runTesseract(buf: Buffer): Promise<{ text: string; confidence: nu
   }
 }
 
-function runOcrOnImageSync(imgPath: string): { text: string; confidence: number } {
-  try {
-    const fs = require("fs");
-    const buf = fs.readFileSync(imgPath);
-    // Use dynamic import with execSync fallback for compatibility
-    // In serverless, we use the async version called via a wrapper
-    return { text: "", confidence: 0 };
-  } catch {
-    return { text: "", confidence: 0 };
-  }
-}
+
 
 export async function ocrImageAsync(buffer: Buffer, _mimeType: string = "image/png"): Promise<{ text: string; confidence: number; words: number }> {
   if (ocrAvailable === false) return { text: "", confidence: 0, words: 0 };
