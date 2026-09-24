@@ -1,15 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Suspense, lazy } from "react";
 import SiteNav from "@/components/SiteNav";
-import HeroImage from "@/components/HeroImage";
-import { Logo } from "@/components/Logo";
 import { useSession } from "@/lib/useSession";
 import {
   ArrowRight, Shield, FileText, CheckCircle, BarChart3,
-  AlertTriangle, Users, ChevronDown,
+  AlertTriangle, Users, Upload, Search, Zap, Eye,
+  Building2, Globe, Lock, ChevronRight, Check, Star,
+  TrendingUp, Clock, Award,
 } from "lucide-react";
 
 const ChatBot = lazy(() => import("@/components/ChatBot"));
@@ -21,16 +19,34 @@ interface PlatformStats {
 }
 
 const FEATURES = [
-  { icon: Shield, title: "Multi-Portal Verification", desc: "Automated cross-verification against GSTN, PAN, Udyam, EPFO, ESIC, MCA21 and other government databases." },
-  { icon: FileText, title: "AI Document Intelligence", desc: "OCR extraction and classification from GST certificates, PAN cards, Udyam registrations, OEM authorizations." },
-  { icon: CheckCircle, title: "Automated Compliance Engine", desc: "Tender-specific eligibility checks with deterministic rule evaluation — AI assists, officers decide." },
-  { icon: BarChart3, title: "Risk & Compliance Scoring", desc: "Overall compliance score with bidder risk classification and verification coverage." },
-  { icon: AlertTriangle, title: "AI Recommendation Engine", desc: "Identifies gaps, discrepancies, missing documents and recommends compliance status to officers." },
-  { icon: Users, title: "Audit Trail & Dashboard", desc: "Centralized verification status, evidence documentation, and complete traceability of every decision." },
+  { icon: Lock, title: "Entity Locker", badge: "NEW", desc: "Securely store, manage and reuse your verified business documents across multiple tenders.", cta: "Open Entity Locker", href: "/bidder/documents" },
+  { icon: Search, title: "Verify a Bid", desc: "Check eligibility, technical and financial compliance for any tender.", cta: "Start Verification", href: "/bidder/applications" },
+  { icon: Award, title: "Compliance Passport", desc: "Your verified compliance profile for faster participation.", cta: "View Passport", href: "/bidder" },
+  { icon: BarChart3, title: "Tender Insights", desc: "Get AI-powered insights, risk analysis and gap identification before you submit.", cta: "Explore Insights", href: "/bidder/bids" },
+];
+
+const GOVT_PORTALS = [
+  { name: "GeM", desc: "Government e-Marketplace" },
+  { name: "GSTN", desc: "GST Network" },
+  { name: "Udyam", desc: "MSME Registration" },
+  { name: "Income Tax", desc: "PAN Verification" },
+  { name: "EPFO", desc: "Provident Fund" },
+  { name: "ESIC", desc: "Employee Insurance" },
+  { name: "Startup India", desc: "DPIIT Recognition" },
+  { name: "DigiLocker", desc: "Document Wallet" },
+  { name: "MCA21", desc: "Company Affairs" },
+  { name: "Make in India", desc: "Local Content" },
+];
+
+const STEPS = [
+  { num: "1", title: "Register", desc: "Create your bidder or officer account", icon: Users },
+  { num: "2", title: "Upload", desc: "Submit tender & supporting documents", icon: Upload },
+  { num: "3", title: "AI Verifies", desc: "Extracts, checks and matches requirements", icon: Zap },
+  { num: "4", title: "Get Results", desc: "View compliance status, issues and recommendations", icon: CheckCircle },
 ];
 
 export default function LandingPage() {
-  const { user: loggedInUser, loading: authLoading } = useSession();
+  const { user: loggedInUser } = useSession();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [showLogin, setShowLogin] = useState(false);
 
@@ -39,242 +55,321 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      {/* ── Frosted navigation ── */}
+    <div className="min-h-screen bg-white">
       <SiteNav onSignIn={() => setShowLogin(true)} />
 
-      {/* ── Hero — fullscreen image, text above ── */}
-      <section className="relative h-screen flex items-center overflow-hidden">
-        <HeroImage />
-        <div className="relative z-10 max-w-[1024px] mx-auto px-6 w-full text-center">
-          <h1 className="display-1 mb-5 !text-white !font-extrabold !text-[clamp(36px,6vw,64px)] text-shadow-hero">
-            {!authLoading && loggedInUser ? (
-              <>Welcome back,<br /><span className="text-[#60a5fa]">{loggedInUser.name.split(" ")[0]}.</span></>
-            ) : (
-              <>Bid compliance.<br /><span className="text-[#60a5fa]">Verified in minutes.</span></>
-            )}
-          </h1>
-          <p className="subhead max-w-2xl mx-auto !text-white/80 text-lg md:text-xl mb-9 text-shadow-hero">
-            Automated verification of bidder eligibility across GSTN, PAN, Udyam,
-            EPFO, ESIC and 14+ government portals — with evidence-backed scoring
-            that keeps the final decision with your officers.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {!authLoading && loggedInUser ? (
-              <>
-                <Link href={loggedInUser.role === "BIDDER" ? "/bidder" : "/officer"} className="btn-primary !bg-white !text-gray-900 hover:!bg-white/90">
-                  Go to Dashboard
+      {/* ═══════ HERO ═══════ */}
+      <section className="relative bg-gradient-to-br from-[#0B1D3A] via-[#0F2847] to-[#162D52] text-white overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-saffron/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left content */}
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="px-3 py-1 rounded-full bg-white/10 text-sm font-medium text-blue-200 border border-white/10">
+                  AI-POWERED • TRANSPARENT • COMPLIANT
+                </span>
+              </div>
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] mb-6 tracking-tight">
+                Smarter Compliance for a{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
+                  Stronger India
+                </span>
+              </h1>
+              <p className="text-lg text-blue-100/80 mb-8 max-w-lg leading-relaxed">
+                Bidguard AI helps verify, analyze and simplify bid compliance for Government Procurement — from document submission to decision support.
+              </p>
+              <div className="flex flex-wrap gap-4 mb-10">
+                <Link href="/register" className="btn-saffron">
+                  Get Started <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/tenders" className="text-white/80 hover:text-white text-base inline-flex items-center gap-1 transition-colors">
-                  Explore tenders <ChevronDown className="w-4 h-4 -rotate-90" />
-                </Link>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setShowLogin(true)} className="btn-primary !px-10 !py-3.5 !text-[16px] cursor-pointer shadow-[0_8px_30px_rgba(0,113,227,0.45)]">
-                  Get Started Free
+                <button className="btn-outline-white">
+                  Watch Demo
                 </button>
-                <Link href="/tenders" className="text-white/80 hover:text-white text-base inline-flex items-center gap-1 transition-colors">
-                  Browse tenders <ChevronDown className="w-4 h-4 -rotate-90" />
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-        {/* Scroll cue */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-          <ChevronDown className="w-5 h-5 text-white/60 animate-bounce" />
-        </div>
-      </section>
-
-      {/* ── Stats strip ── */}
-      <section className="bg-[var(--surface)] border-y border-[var(--border)]">
-        <div className="max-w-[1024px] mx-auto px-6 py-14">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-            {[
-              { label: "Active Tenders", value: stats?.activeTenders ?? "—" },
-              { label: "Registered Bidders", value: stats?.registeredBidders ?? "—" },
-              { label: "Total Bids", value: stats?.totalBids ?? "—" },
-              { label: "Portal Integrations", value: "14+" },
-            ].map(s => (
-              <div key={s.label}>
-                <div className="display-3 !text-[32px] md:!text-[44px] !font-bold text-[var(--accent)]">{s.value}</div>
-                <div className="caption mt-1">{s.label}</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="flex flex-wrap gap-6 text-sm text-blue-100/60">
+                <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" /> Trusted & Secure</span>
+                <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-blue-300" /> Faster Evaluation</span>
+                <span className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-orange-300" /> Evidence-Backed Decisions</span>
+              </div>
+            </div>
 
-      {/* ── Visual band — where verification happens ── */}
-      <section aria-label="Sectors served" className="grid grid-cols-3 gap-px bg-[var(--border)]">
-        {[
-          { src: "https://images.pexels.com/photos/257700/pexels-photo-257700.jpeg?auto=compress&cs=tinysrgb&w=800", alt: "Industrial manufacturing plant", label: "Manufacturing" },
-          { src: "https://images.pexels.com/photos/1216589/pexels-photo-1216589.jpeg?auto=compress&cs=tinysrgb&w=800", alt: "Government office building", label: "Public Infrastructure" },
-          { src: "https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&cs=tinysrgb&w=800", alt: "Technology corridor", label: "Technology & Energy" },
-        ].map(img => (
-          <figure key={img.label} className="relative aspect-[4/3] overflow-hidden group m-0">
-            <Image
-              src={img.src}
-              alt={img.alt}
-              width={800}
-              height={600}
-              sizes="(max-width: 768px) 33vw, 380px"
-              loading="lazy"
-              className="w-full h-full object-cover opacity-70 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-            />
-            <figcaption className="absolute bottom-3 left-4 text-xs font-medium text-[var(--foreground)] drop-shadow-lg tracking-wide">{img.label}</figcaption>
-          </figure>
-        ))}
-      </section>
-
-      {/* ── How It Works ── */}
-      <section id="features" className="py-20 bg-[var(--surface)] border-b border-[var(--border)] scroll-mt-16">
-        <div className="max-w-[1024px] mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="display-2">How it works.</h2>
-            <p className="subhead mt-2">From upload to officer decision — fully automated.</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-5">
-            {[
-              { step: "01", title: "Register", desc: "Create an account with PAN, GST and Udyam details.", gradient: "from-blue-900/20 to-transparent" },
-              { step: "02", title: "Upload", desc: "GST, PAN, Udyam certificates via AI-powered OCR.", gradient: "from-indigo-900/20 to-transparent" },
-              { step: "03", title: "Verify", desc: "Cross-checked against 14+ government portals automatically.", gradient: "from-violet-900/20 to-transparent" },
-              { step: "04", title: "Decide", desc: "Officers review compliance score, risk level and evidence.", gradient: "from-purple-900/20 to-transparent" },
-            ].map((s, i) => (
-              <div key={s.step} className={`card-flat p-6 relative hover:-translate-y-1 transition-transform duration-300 bg-gradient-to-b ${s.gradient}`}>
-                <div className="w-10 h-10 rounded-xl bg-[var(--accent)] flex items-center justify-center text-white font-semibold text-sm mb-4">
-                  {s.step.replace("0", "")}
+            {/* Right — workflow diagram */}
+            <div className="relative">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+                <h3 className="text-sm font-semibold text-blue-200 mb-6 uppercase tracking-wider">From Documents to Decisions</h3>
+                <div className="flex items-center justify-between gap-2">
+                  {["Upload", "Verify (AI)", "Ensure Compliance", "Decision Support"].map((step, i) => (
+                    <div key={step} className="flex items-center gap-2">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${i === 1 ? "bg-saffron/20 border border-saffron/30" : "bg-white/10 border border-white/10"}`}>
+                          {i === 0 && <Upload className="w-5 h-5 text-blue-200" />}
+                          {i === 1 && <Zap className="w-5 h-5 text-saffron" />}
+                          {i === 2 && <Shield className="w-5 h-5 text-green-400" />}
+                          {i === 3 && <CheckCircle className="w-5 h-5 text-blue-200" />}
+                        </div>
+                        <span className="text-xs text-blue-200/70 text-center whitespace-nowrap">{step}</span>
+                      </div>
+                      {i < 3 && <ChevronRight className="w-4 h-4 text-white/20 mt-[-20px]" />}
+                    </div>
+                  ))}
                 </div>
-                <h3 className="headline !text-[19px] mb-1.5">{s.title}</h3>
-                <p className="text-sm text-[var(--foreground-secondary)] leading-relaxed">{s.desc}</p>
-                {i < 3 && <div className="hidden md:block absolute top-12 -right-3 w-6 h-px bg-[var(--border)]" />}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ── Portal Integrations ── */}
-      <section id="compliance" className="py-20 scroll-mt-16">
-        <div className="max-w-[1024px] mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="display-2">Integrated with government.</h2>
-            <p className="subhead mt-2">Automated verification against official databases.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: "GSTN", desc: "GST Registration & Returns", accent: "bg-emerald-900/30 text-emerald-400" },
-              { name: "PAN / NSDL", desc: "PAN Verification", accent: "bg-blue-900/30 text-blue-400" },
-              { name: "Udyam", desc: "MSME Registration", accent: "bg-orange-900/30 text-orange-400" },
-              { name: "EPFO", desc: "PF Compliance", accent: "bg-indigo-900/30 text-indigo-400" },
-              { name: "ESIC", desc: "Insurance Compliance", accent: "bg-pink-900/30 text-pink-400" },
-              { name: "MCA21", desc: "Company Filings", accent: "bg-violet-900/30 text-violet-400" },
-              { name: "DigiLocker", desc: "Document Verification", accent: "bg-cyan-900/30 text-cyan-400" },
-              { name: "Startup India", desc: "DPIIT Recognition", accent: "bg-amber-900/30 text-amber-400" },
-            ].map(p => (
-              <div key={p.name} className="card-flat p-5 hover:border-[var(--border)] hover:shadow-sm transition-all duration-200 group cursor-default">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${p.accent}`}>
-                    {p.name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="font-semibold text-[16px] group-hover:text-[var(--accent)] transition-colors">{p.name}</span>
+              {/* Trusted by Government */}
+              <div className="mt-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-5">
+                <p className="text-xs text-blue-200/60 mb-3 uppercase tracking-wider font-medium">Trusted by Government Ecosystem</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-8 h-8 text-blue-300" />
+                    <div>
+                      <p className="text-sm font-bold text-white">GeM</p>
+                      <p className="text-[10px] text-blue-200/50">Government e-Marketplace</p>
+                    </div>
+                  </div>
+                  <span className="text-white/10">|</span>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-6 h-6 text-green-400" />
+                    <div>
+                      <p className="text-xs font-semibold text-white">Also supports</p>
+                      <p className="text-[10px] text-blue-200/50">GSTN • Udyam • PAN • EPFO • ESIC • + More</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-[13px] text-[var(--foreground-tertiary)]">{p.desc}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ GOVERNMENT PORTALS ═══════ */}
+      <section className="bg-white border-y border-[var(--border)] py-5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider text-center mb-4">
+            Integrated with Government Portals — Real-time verification. Trusted data sources.
+          </p>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
+            {GOVT_PORTALS.map(p => (
+              <div key={p.name} className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--navy)] transition-colors">
+                <Globe className="w-4 h-4 text-[var(--blue-accent)]" />
+                <span className="font-medium">{p.name}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="py-20 bg-[var(--surface)] border-y border-[var(--border)]">
-        <div className="max-w-[1024px] mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="display-2">Platform capabilities.</h2>
-            <p className="subhead mt-2">AI-powered decision support for procurement officers.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* ═══════ FEATURE CARDS ═══════ */}
+      <section className="py-20 bg-[var(--bg-secondary)]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURES.map(f => (
-              <div key={f.title} className="card-flat p-7 hover:-translate-y-1 hover:border-[var(--border)] hover:bg-[var(--surface-2)] transition-all duration-300 cursor-default">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center mb-5 group-hover:bg-[var(--accent-light)] transition-colors">
-                  <f.icon className="w-5 h-5 text-[var(--accent)]" strokeWidth={1.75} />
+              <Link key={f.title} href={f.href} className="card-feature group">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--navy)] to-[var(--navy-lighter)] flex items-center justify-center">
+                    <f.icon className="w-6 h-6 text-white" />
+                  </div>
+                  {f.badge && <span className="badge-new">{f.badge}</span>}
                 </div>
-                <h3 className="headline !text-[19px] mb-2">{f.title}</h3>
-                <p className="text-sm text-[var(--foreground-secondary)] leading-relaxed">{f.desc}</p>
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{f.title}</h3>
+                <p className="text-sm text-[var(--text-secondary)] mb-4 leading-relaxed">{f.desc}</p>
+                <span className="text-sm font-semibold text-[var(--saffron)] flex items-center gap-1 group-hover:gap-2 transition-all">
+                  {f.cta} <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ HOW IT WORKS ═══════ */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)] mb-4">How It Works</h2>
+            <p className="text-[var(--text-secondary)] max-w-2xl mx-auto">A simple, end-to-end process for compliant procurement</p>
+          </div>
+          <div className="grid md:grid-cols-4 gap-8">
+            {STEPS.map((s, i) => (
+              <div key={s.num} className="text-center relative">
+                {i < 3 && <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-[2px] bg-gradient-to-r from-[var(--border)] to-transparent" />}
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--navy)] to-[var(--navy-lighter)] flex items-center justify-center mx-auto mb-5 relative z-10">
+                  <span className="text-xl font-bold text-white">{s.num}</span>
+                </div>
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{s.title}</h3>
+                <p className="text-sm text-[var(--text-secondary)]">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      {!authLoading && !loggedInUser && (
-        <section className="py-24 border-t border-[var(--border)] bg-gradient-to-br from-[var(--accent)] via-[#3b82f6] to-[#6366f1] text-white">
-          <div className="max-w-[720px] mx-auto px-6 text-center">
-            <h2 className="display-2 !text-[36px] mb-3 !text-white">Ready to bid with confidence?</h2>
-            <p className="subhead mb-8 !text-white/80">Explore live tenders or create your bidder account in minutes.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/tenders" className="inline-flex items-center justify-center gap-2 bg-white text-[var(--accent)] font-semibold px-8 py-3.5 rounded-xl text-[15px] hover:bg-white/90 transition-colors shadow-lg">
-                Explore Tenders <ArrowRight className="w-4 h-4" />
-              </Link>
-              <button onClick={() => setShowLogin(true)} className="inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-3.5 rounded-xl text-[15px] border border-white/30 hover:bg-white/10 transition-colors cursor-pointer">
-                Create an account
-              </button>
+      {/* ═══════ FOR OFFICERS / FOR BIDDERS ═══════ */}
+      <section className="py-20 bg-[var(--bg-secondary)]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Officers */}
+            <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
+              <div className="bg-gradient-to-r from-[var(--navy)] to-[var(--navy-lighter)] px-8 py-6">
+                <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-1">For Procurement Officers</p>
+                <h3 className="text-2xl font-bold text-white">Faster, Evidence-Driven Evaluation</h3>
+              </div>
+              <div className="p-8">
+                <ul className="space-y-3 mb-8">
+                  {["Machine-readable tender requirements", "Automated document verification", "Cross-source government checks", "Risk & anomaly detection", "Complete audit trail", "Human-in-the-loop decision support"].map(item => (
+                    <li key={item} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/admin" className="btn-navy text-sm">
+                  Explore Officer Dashboard <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
 
-      {/* ── Footer ── */}
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="max-w-[1024px] mx-auto px-6 py-12">
-          <div className="grid md:grid-cols-4 gap-8 pb-8">
-            <div>
-              <Logo />
-              <p className="text-xs text-[var(--foreground-tertiary)] mt-3 leading-relaxed max-w-[240px]">AI-Powered Bid Compliance Verification Platform for Government e-Marketplace (GeM) procurement.</p>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-[var(--foreground)] mb-3">Explore</h4>
-              <div className="space-y-2">
-                <Link href="/tenders" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">Active Tenders</Link>
-                <a href="/how-it-works" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">How It Works</a>
-                <a href="/compliance" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">Compliance</a>
+            {/* Bidders */}
+            <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
+              <div className="bg-gradient-to-r from-[var(--saffron)] to-[var(--saffron-light)] px-8 py-6">
+                <p className="text-xs font-semibold text-orange-100 uppercase tracking-wider mb-1">For Bidders</p>
+                <h3 className="text-2xl font-bold text-white">Know Your Bid Before You Submit</h3>
               </div>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-[var(--foreground)] mb-3">For Bidders</h4>
-              <div className="space-y-2">
-                <Link href="/register" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">Register</Link>
-                <Link href="/tenders" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">Browse Tenders</Link>
-                <a href="/how-it-works" className="block text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:underline">Compliance Guide</a>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold text-[var(--foreground)] mb-3">Contact</h4>
-              <div className="space-y-2 text-xs text-[var(--foreground-secondary)]">
-                <p>Helpline: 1800-11-0031</p>
-                <p>Email: support@absar.gov.in</p>
-                <p>Mon–Sat: 9:00 AM – 6:00 PM</p>
+              <div className="p-8">
+                <ul className="space-y-3 mb-8">
+                  {["Check eligibility and document readiness", "Identify missing or expired documents", "Validate technical compliance", "Get AI-powered recommendations", "Track your compliance status", "Maintain reusable documents in Entity Locker"].map(item => (
+                    <li key={item} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                      <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/register" className="btn-saffron text-sm">
+                  Start as a Bidder <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
           </div>
-          <div className="border-t border-[var(--border)] pt-5 flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="caption">© 2026 BIDGUARD AI — AI-Powered Bid Compliance Platform.</div>
-            <div className="flex items-center gap-5 caption divide-x divide-[var(--border)]">
-              <a href="#" className="hover:underline pr-5">Terms of Use</a>
-              <a href="#" className="hover:underline pr-5">Privacy Policy</a>
-              <a href="#" className="hover:underline">Accessibility</a>
+        </div>
+      </section>
+
+      {/* ═══════ STATS ═══════ */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="stat-card">
+              <div className="stat-number">{stats?.activeTenders ?? 0}</div>
+              <div className="stat-label">Active Tenders</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">{stats?.registeredBidders ?? 0}</div>
+              <div className="stat-label">Registered Bidders</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">{stats?.totalBids ?? 0}</div>
+              <div className="stat-label">Bids Submitted</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">{stats?.totalRequirements ?? 0}</div>
+              <div className="stat-label">Requirements Verified</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ CTA BANNER ═══════ */}
+      <section className="py-16 bg-gradient-to-r from-[var(--saffron)] via-[var(--saffron-dark)] to-[var(--navy)] text-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+            Together for a Transparent, Efficient and Inclusive Procurement Ecosystem.
+          </h2>
+          <p className="text-white/80 mb-8 text-lg">
+            Technology for Trust. Procurement for a Stronger India.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/register" className="btn-saffron bg-white text-[var(--navy)] hover:bg-gray-100 shadow-lg">
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/login" className="btn-outline-white">
+              Login
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════ FOOTER ═══════ */}
+      <footer className="bg-[var(--bg-darker)] text-white pt-16 pb-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-saffron to-orange-500 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">BIDGUARD AI</h3>
+                  <p className="text-xs text-blue-200/50">Secure Procurement. Stronger India.</p>
+                </div>
+              </div>
+              <p className="text-sm text-blue-200/60 leading-relaxed max-w-sm mb-4">
+                AI-Powered Government Bid Compliance Verification Platform. Built for SIH 2026 by Team Anveshak 2.0.
+              </p>
+              <div className="flex items-center gap-2 text-xs text-blue-200/40">
+                <Star className="w-3 h-3 text-amber-400" />
+                Smart India Hackathon 2026
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-blue-200/60">
+                <li><Link href="/bidder/documents" className="hover:text-white transition-colors">Entity Locker</Link></li>
+                <li><Link href="/bidder/applications" className="hover:text-white transition-colors">Bid Verification</Link></li>
+                <li><Link href="/bidder" className="hover:text-white transition-colors">Compliance Passport</Link></li>
+                <li><Link href="/bidder/bids" className="hover:text-white transition-colors">Tender Insights</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-blue-200/60">
+                <li><span className="hover:text-white transition-colors cursor-pointer">About Us</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Careers</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Contact Us</span></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-blue-200/60">
+                <li><span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Terms of Use</span></li>
+                <li><span className="hover:text-white transition-colors cursor-pointer">Data Governance</span></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-blue-200/40">
+              &copy; 2026 BIDGUARD AI. All rights reserved. A step towards Viksit Bharat.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-blue-200/40">
+              <span>Team Anveshak 2.0</span>
+              <span>|</span>
+              <span>Smart India Hackathon 2026</span>
             </div>
           </div>
         </div>
       </footer>
 
+      {/* ── Modals ── */}
+      {showLogin && (
+        <Suspense fallback={null}>
+          <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
-        <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ChatBot context="landing" />
+        <ChatBot />
       </Suspense>
     </div>
   );

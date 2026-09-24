@@ -1,22 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import { Menu, X, Shield, ChevronDown } from "lucide-react";
 import UserNav from "@/components/UserNav";
 import { useSession } from "@/lib/useSession";
 
-const LINKS = [
-  { href: "/tenders", label: "Tenders" },
-  { href: "/how-it-works", label: "How It Works" },
-  { href: "/compliance", label: "Compliance" },
-  { href: "/about", label: "About" },
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#features", label: "Features" },
+  { href: "/bidder", label: "For Bidders" },
+  { href: "/admin", label: "For Officers" },
 ];
 
-/**
- * Apple-style dark frosted-glass navigation.
- * 44px bar · centered micro-links · blur material per HIG.
- */
 export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
   const { user, loading } = useSession();
   const [open, setOpen] = useState(false);
@@ -31,46 +27,59 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
 
   return (
     <nav
-      className={`glass-nav sticky top-0 z-50 transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_1px_0_0_rgba(255,255,255,0.08),0_8px_30px_rgba(0,0,0,0.5)]" : ""
+      className={`nav-glass sticky top-0 z-50 transition-all duration-300 ${
+        scrolled ? "shadow-lg" : ""
       }`}
-      style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
     >
-      <div className="max-w-[1024px] mx-auto px-6">
-        <div className="h-12 flex items-center justify-between gap-4">
-          {/* Left: logo */}
-          <Link href="/" aria-label="BIDGUARD AI home" className="shrink-0">
-            <Logo size="small" dark />
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="h-16 flex items-center justify-between gap-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-[var(--saffron)] to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-white font-bold text-lg leading-none tracking-tight">BIDGUARD</span>
+              <span className="text-[var(--saffron)] font-bold text-lg leading-none"> AI</span>
+            </div>
           </Link>
 
-          {/* Center: micro-links (desktop) */}
-          <div className="hidden md:flex items-center gap-7">
-            {LINKS.map((l) =>
-              l.href.startsWith("/") ? (
-                <Link key={l.href} href={l.href} className="text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] font-medium transition-colors duration-150">
-                  {l.label}
-                </Link>
-              ) : (
-                <a key={l.href} href={l.href} className="text-xs text-[var(--foreground-secondary)] hover:text-[var(--foreground)] font-medium transition-colors duration-150">
-                  {l.label}
-                </a>
-              ),
-            )}
+          {/* Center nav links */}
+          <div className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map(l => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="px-3 py-2 text-sm font-medium text-blue-100/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-150"
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-3 shrink-0">
             {!loading && !user && (
-              <button
-                onClick={onSignIn}
-                className="text-xs font-medium text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] rounded-full px-4 py-1.5 transition-colors duration-200 cursor-pointer"
-              >
-                Login
-              </button>
+              <>
+                <Link
+                  href="/register"
+                  className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-white border border-white/20 hover:bg-white/10 rounded-lg px-4 py-2 transition-all"
+                >
+                  Register
+                </Link>
+                <button
+                  onClick={onSignIn}
+                  className="text-sm font-semibold text-white bg-[var(--saffron)] hover:bg-[var(--saffron-dark)] rounded-lg px-5 py-2 transition-all cursor-pointer shadow-md hover:shadow-lg"
+                >
+                  Login
+                </button>
+              </>
             )}
             <UserNav />
+
+            {/* Mobile menu button */}
             <button
-              className="md:hidden text-[var(--foreground-secondary)] hover:text-[var(--foreground)] p-1 cursor-pointer"
+              className="lg:hidden text-white/70 hover:text-white p-2 cursor-pointer"
               onClick={() => setOpen(!open)}
               aria-label="Menu"
             >
@@ -82,24 +91,33 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden border-t border-[var(--border)] bg-[var(--surface)] px-6 py-4 space-y-3">
-          {LINKS.map((l) => (
-            <a
+        <div className="lg:hidden border-t border-white/10 bg-[var(--navy)] px-6 py-4 space-y-1">
+          {NAV_LINKS.map(l => (
+            <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block text-sm text-[var(--foreground-secondary)] hover:text-[var(--foreground)] py-1"
+              className="block text-sm text-blue-100/70 hover:text-white hover:bg-white/10 rounded-lg px-3 py-2.5 transition-colors"
             >
               {l.label}
-            </a>
+            </Link>
           ))}
           {!loading && !user && (
-            <button
-              onClick={() => { setOpen(false); onSignIn(); }}
-               className="w-full btn-primary !py-2 !text-sm mt-2 cursor-pointer"
-            >
-              Login
-            </button>
+            <div className="pt-3 border-t border-white/10 space-y-2">
+              <Link
+                href="/register"
+                onClick={() => setOpen(false)}
+                className="block text-center text-sm font-medium text-white border border-white/20 rounded-lg px-4 py-2.5 hover:bg-white/10 transition-colors"
+              >
+                Register as New Bidder
+              </Link>
+              <button
+                onClick={() => { setOpen(false); onSignIn(); }}
+                className="w-full text-sm font-semibold text-white bg-[var(--saffron)] rounded-lg px-4 py-2.5 cursor-pointer"
+              >
+                Login
+              </button>
+            </div>
           )}
         </div>
       )}
