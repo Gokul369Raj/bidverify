@@ -621,22 +621,28 @@ function extractPdfTextNative(buf: Buffer): { text: string; pageCount: number } 
 }
 
 async function ocrBuffer(buffer: Buffer, isPdf: boolean): Promise<{ text: string; confidence: number }> {
+  const OCR_TIMEOUT_MS = 15000;
   try {
     const { ocrImageAsync, renderAndOcrPdfAsync, ocrPdfImagesAsync } = await import("./ocr");
+    const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
+      Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error("OCR timeout")), ms))]);
+
     if (isPdf) {
       try {
-        const rendered = await renderAndOcrPdfAsync(buffer, 3);
+        const rendered = await withTimeout(renderAndOcrPdfAsync(buffer, 3), OCR_TIMEOUT_MS);
         if (rendered.text.length > 10) {
           return { text: rendered.text, confidence: rendered.confidence };
         }
       } catch {}
-      const imgResult = await ocrPdfImagesAsync(buffer, 3);
-      if (imgResult.text.length > 10) {
-        return { text: imgResult.text, confidence: imgResult.confidence };
-      }
+      try {
+        const imgResult = await withTimeout(ocrPdfImagesAsync(buffer, 3), OCR_TIMEOUT_MS);
+        if (imgResult.text.length > 10) {
+          return { text: imgResult.text, confidence: imgResult.confidence };
+        }
+      } catch {}
       return { text: "", confidence: 0 };
     }
-    const result = await ocrImageAsync(buffer);
+    const result = await withTimeout(ocrImageAsync(buffer), OCR_TIMEOUT_MS);
     return { text: result.text, confidence: result.confidence };
   } catch {
     return { text: "", confidence: 0 };

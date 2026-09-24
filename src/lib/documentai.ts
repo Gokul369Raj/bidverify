@@ -81,11 +81,17 @@ export async function processBidDocument(documentId: string, actorId?: string | 
     const ext = doc.fileName.toLowerCase().split(".").pop() ?? "";
     let image: { mime: string; dataBase64: string } | undefined;
     let text: string | undefined;
-    let pdfBase64: string | undefined;
     if (["png", "jpg", "jpeg"].includes(ext)) {
       image = { mime: doc.fileType || `image/${ext === "jpg" ? "jpeg" : ext}`, dataBase64: buffer.toString("base64") };
     } else if (ext === "pdf") {
-      pdfBase64 = buffer.toString("base64");
+      // Extract text from PDF instead of sending raw PDF to AI
+      try {
+        const pdfParse = (await import("pdf-parse")).default;
+        const pdfData = await pdfParse(buffer);
+        text = pdfData.text?.slice(0, 40_000) || "";
+      } catch {
+        text = "";
+      }
     } else if (["txt", "md", "csv", "json"].includes(ext)) {
       text = buffer.toString("utf8").slice(0, 40_000);
     }
@@ -123,7 +129,6 @@ export async function processBidDocument(documentId: string, actorId?: string | 
         },
         text,
         image,
-        pdfBase64,
       },
       actorId,
     );
@@ -159,7 +164,7 @@ export async function processBidDocument(documentId: string, actorId?: string | 
           value: f.value,
           page: f.page ?? 1,
           confidence: f.confidence ?? null,
-          source: extraction.meta.simulated ? "AI" : (image || pdfBase64 ? "VISION" : "AI"),
+          source: extraction.meta.simulated ? "AI" : (image ? "VISION" : "AI"),
         },
       });
     }

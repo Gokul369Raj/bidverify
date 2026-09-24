@@ -88,7 +88,11 @@ export class OpenAIProvider implements AiProvider {
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const content: Record<string, unknown>[] = [{ type: "text", text: opts.prompt }];
     for (const img of opts.images ?? []) {
-      content.push({ type: "image_url", image_url: { url: `data:${img.mime};base64,${img.dataBase64}` } });
+      if (img.mime === "application/pdf") {
+        content.push({ type: "text", text: "[PDF document attached — read the text content provided in the prompt]" });
+      } else {
+        content.push({ type: "image_url", image_url: { url: `data:${img.mime};base64,${img.dataBase64}` } });
+      }
     }
     const body: Record<string, unknown> = {
       model,
