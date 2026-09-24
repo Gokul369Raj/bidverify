@@ -697,6 +697,35 @@ async function main() {
   console.log("  Auditor:     auditor@procurement.gov.in / password123");
   console.log("  Reviewer:    compliance@procurement.gov.in / password123");
   console.log("  Google Demo: Click 'Continue with Google (Demo)' on login page");
+
+  // ── Create TEST DOCUMENTS for document verification testing ──
+  // Using base64-encoded minimal PDF content for testing
+  
+  // Minimal PDF with PAN-like content (fake PAN document - will FAIL because it's random)
+  const fakePanPdfBase64 = "JVBERi0xLjQKMSAwIG9iago8PC9UeXBlL1hTUyAvUm9vdCAxIDAgUi9PcmRlci9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9Db250ZW50cyA0IDAgUiAvQ29udGVudHMgMiAwIFIgL0NvdW50IDEgL0tpZHMgWzMgMCBSIF0+PgplbmRvYmoKMiAwIG9iago8PAovVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgL0NvdW50IDEgL0tpZHMgWzUgMCBSIF0+PgplbmRvYmoKMyAwIG9iago8PAovVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9Db250ZW50cyA0IDAgUiAvQ29udGVudHMgMiAwIFIgL0VuY29kaW5nIDUgMCBSIC9QYWdlcyAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQo+PgplbmRvYmoKNCAwIG9iago8PC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9Gb250IDYgMCBSID4+CmVuZG9iagp4cmVmCjAgNAowMDAwMDAwMDAwIDY1NTM1WlCyDQo+PgplbmRvYmoKMSAwIG9i-";
+// Short PAN-like PDF content
+  const fakePanPdf = Buffer.from(fakePanPdfBase64 + "", 'base64').toString('binary');
+  
+  // Simple GST-like content PDF
+  const fakeGstPdf = Buffer.from("JVBERi0xLjQK","base64").toString('binary');
+  
+  // Random PDF (no PAN/GST content)
+  const randomPdf = Buffer.from("JVBERi0xLjQKMSAwIG9iago8PC9UeXBlL1hTUyAvUm9vdCAxIDAgUi9PcmRlci9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9Db250ZW50cyA0IDAgUiAvQ29udGVudHMgMiAwIFIgL0NvdW50IDEgL0tpZHMgWzMgMCBSIF0+PgplbmRvYmoKMiAwIG9iago8PAovVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgL0NvdW50IDEgL0tpZHMgWzUgMCBSIF0+PgplbmRvYmoKMyAwIG9iago8PAovVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9Db250ZW50cyA0IDAgUiAvQ29udGVudHMgMiAwIFIgL0VuY29kaW5nIDUgMCBSIC9QYWdlcyAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQo+PgplbmRvYmoKNCAwIG9iago8PC9GaWx0ZXIgL0ZsYXRlRGVjb2RlIC9Gb250IDYgMCBSID4+CmVuZG9iagp4cmVmCjAgNAowMDAwMDAwMDAwIDY1NTM1WlCyDQo+PgplbmRvYmoKMSAwIG9i-", 'base64').toString('binary');
+  
+  // Create documents in vault for bidder[0]
+  const bidderOrgId = orgs[0].id;
+  const bidderUserId = bidderUsers[0].id;
+  
+  // We'll create document entries but note: actual file storage won't work without storage service
+  // For testing, we create entries with mock storage paths
+  console.log("\n📄 Test documents will be created on deployed site via manual upload");
+  console.log("\n📝 To test document verification:");
+  console.log("  1. Login as bidder: sunil.kumar@abcindustries.example / password123");
+  console.log("  2. Go to Document Vault");
+  console.log("  3. Upload PAN PDF + select 'PAN_CARD' → Should score high (PASS)");
+  console.log("  4. Upload random PDF + select 'PAN_CARD' → Should score 0 (FAIL)");
+  console.log("  5. Upload GST PDF + select 'GST_CERTIFICATE' → Should score high (PASS)");
+  console.log("  6. Upload random PDF + select 'GST_CERTIFICATE' → Should score 0 (FAIL)");
 }
 
 main()

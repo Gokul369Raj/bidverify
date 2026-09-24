@@ -57,6 +57,10 @@ export interface VerificationResult {
   humanMessage: string;
   actionMessage: string;
   failureReason: string | null;
+
+  // OCR status (for debugging production issues)
+  ocrFailed: boolean;
+  textExtractionMode: string;
 }
 
 export interface EvidenceBreakdown {
@@ -821,26 +825,33 @@ export async function verifyDocument(input: DocVerificationInput): Promise<Verif
 
   // ─── STEP 4: OCR FALLBACK ───
   let ocrConfidence = 0;
+  let ocrFailed = false;
   const needsOcr = extractedText.length < 50 || !hasUsefulContent || isImage;
 
   if (needsOcr) {
     const ocrStart = Date.now();
-    const ocrResult = await ocrBuffer(processedBuffer, isPdf);
-    ocrConfidence = ocrResult.confidence;
-    processing.ocrConfidence = ocrConfidence;
+    try {
+      const ocrResult = await ocrBuffer(processedBuffer, isPdf);
+      ocrConfidence = ocrResult.confidence;
+      processing.ocrConfidence = ocrConfidence;
 
-    if (ocrResult.text.length > 20) {
-      // Use OCR text if it's longer OR if native was garbage
-      const ocrPrintable = ocrResult.text.replace(/[^\x20-\x7E]/g, "").length;
-      const ocrQuality = ocrPrintable / ocrResult.text.length;
-      const shouldUseOcr = ocrResult.text.length > extractedText.length || !hasUsefulContent || ocrQuality > textQuality;
-      
-      if (shouldUseOcr) {
-        extractedText = ocrResult.text;
-        processing.textExtractionMode = processing.textExtractionMode === "NATIVE" ? "NATIVE_AND_OCR" : "OCR";
+      if (ocrResult.text.length > 20) {
+        // Use OCR text if it's longer OR if native was garbage
+        const ocrPrintable = ocrResult.text.replace(/[^\x20-\x7E]/g, "").length;
+        const ocrQuality = ocrPrintable / ocrResult.text.length;
+        const shouldUseOcr = ocrResult.text.length > extractedText.length || !hasUsefulContent || ocrQuality > textQuality;
+        
+        if (shouldUseOcr) {
+          extractedText = ocrResult.text;
+          processing.textExtractionMode = processing.textExtractionMode === "NATIVE" ? "NATIVE_AND_OCR" : "OCR";
+        }
       }
+      auditLog("OCR", `OCR extracted ${ocrResult.text.length} chars, confidence: ${ocrConfidence.toFixed(1)}%`, Date.now() - ocrStart);
+    } catch (ocrErr) {
+      ocrFailed = true;
+      console.warn("OCR failed, continuing with native text:", ocrErr instanceof Error ? ocrErr.message : ocrErr);
+      auditLog("OCR", `OCR failed: ${ocrErr instanceof Error ? ocrErr.message : "unknown error"} - using native text only`, Date.now() - ocrStart);
     }
-    auditLog("OCR", `OCR extracted ${ocrResult.text.length} chars, confidence: ${ocrConfidence.toFixed(1)}%`, Date.now() - ocrStart);
   }
 
   processing.textLength = extractedText.length;
@@ -1127,9 +1138,14 @@ export async function verifyDocument(input: DocVerificationInput): Promise<Verif
   // OCR confidence score
   let ocrScore = 0;
   if (processing.textExtractionMode !== "NONE") {
-    ocrScore = Math.floor(w.ocrConfidence * Math.min(1, processing.textLength > 200 ? 1 : processing.textLength / 200));
-    if (ocrConfidence > 70) ocrScore = w.ocrConfidence;
-    else if (ocrConfidence > 40) ocrScore = Math.floor(w.ocrConfidence * 0.7);
+    if (ocrFailed) {
+      // OCR failed but we have native text - give partial credit for text extraction
+      ocrScore = Math.floor(w.ocrConfidence * Math.min(0.6, processing.textLength > 200 ? 0.6 : processing.textLength / 200 * 0.6));
+    } else {
+      ocrScore = Math.floor(w.ocrConfidence * Math.min(1, processing.textLength > 200 ? 1 : processing.textLength / 200));
+      if (ocrConfidence > 70) ocrScore = w.ocrConfidence;
+      else if (ocrConfidence > 40) ocrScore = Math.floor(w.ocrConfidence * 0.7);
+    }
   }
 
   const totalScore = docTypeScore + idScore + supportScore + ocrScore + qrScore + sigScore + structScore + tamperScore;
@@ -1145,15 +1161,18 @@ export async function verifyDocument(input: DocVerificationInput): Promise<Verif
 
   if (finalScore >= 75) {
     status = "VERIFIED";
-    humanMessage = `${rule.label} verified successfully. Required ${rule.requiredIdentifier.label} (${identifierValue}) detected and validated.`;
+    const ocrNote = ocrFailed ? " (OCR unavailable - scored on native text only)" : "";
+    humanMessage = `${rule.label} verified successfully. Required ${rule.requiredIdentifier.label} (${identifierValue}) detected and validated.${ocrNote}`;
     actionMessage = "";
   } else if (finalScore >= 45) {
     status = "NEEDS_REVIEW";
-    humanMessage = `${rule.label} needs additional review. ${rule.requiredIdentifier.label} found but some checks produced uncertain results.`;
+    const ocrNote = ocrFailed ? " (OCR unavailable - scored on native text only)" : "";
+    humanMessage = `${rule.label} needs additional review. ${rule.requiredIdentifier.label} found but some checks produced uncertain results.${ocrNote}`;
     actionMessage = "Officer will review this document";
   } else {
     status = "FAILED";
-    humanMessage = `${rule.label} verification failed. Insufficient evidence to confirm document authenticity.`;
+    const ocrNote = ocrFailed ? " (OCR unavailable)" : "";
+    humanMessage = `${rule.label} verification failed. Insufficient evidence to confirm document authenticity.${ocrNote}`;
     actionMessage = `Upload a clearer ${rule.label}`;
   }
 
@@ -1209,7 +1228,7 @@ export async function verifyDocument(input: DocVerificationInput): Promise<Verif
         maxScore: w.ocrConfidence,
         detail: processing.textExtractionMode === "NONE"
           ? "No text could be extracted"
-          : `${processing.textExtractionMode} extraction: ${processing.textLength} characters, OCR confidence: ${ocrConfidence.toFixed(1)}%`,
+          : `${processing.textExtractionMode} extraction: ${processing.textLength} characters, OCR confidence: ${ocrConfidence.toFixed(1)}%${ocrFailed ? " (OCR failed, using native text only)" : ""}`,
       },
       qrVerification: {
         label: "QR / Barcode",
@@ -1246,6 +1265,8 @@ export async function verifyDocument(input: DocVerificationInput): Promise<Verif
     humanMessage,
     actionMessage,
     failureReason: status === "FAILED" ? humanMessage : null,
+    ocrFailed,
+    textExtractionMode: processing.textExtractionMode,
   };
 }
 
@@ -1283,6 +1304,8 @@ function buildFailResult(
     humanMessage: reason,
     actionMessage: action,
     failureReason: reason,
+    ocrFailed: false,
+    textExtractionMode: processing.textExtractionMode,
   };
 }
 
@@ -1316,5 +1339,7 @@ function buildBlockedResult(
     humanMessage: reason,
     actionMessage: action,
     failureReason: reason,
+    ocrFailed: false,
+    textExtractionMode: processing.textExtractionMode,
   };
 }

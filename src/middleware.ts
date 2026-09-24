@@ -48,7 +48,7 @@ export async function middleware(req: NextRequest) {
 
   if (!role) {
     const url = req.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
@@ -67,5 +67,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/bidder/:path*", "/officer/:path*"],
+  matcher: ["/bidder/:path*", "/officer/:path*", "/admin/:path*"],
 };

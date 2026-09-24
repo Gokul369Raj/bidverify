@@ -14,15 +14,22 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Login failed");
+        setLoading(false);
         return;
       }
-      window.location.href = "/";
+      // Show success and redirect after a brief delay
+      setError("");
+      const redirectTo = data?.data?.redirect || "/bidder";
+      setTimeout(() => {
+        window.location.href = redirectTo;
+      }, 300);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -39,10 +46,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold text-[var(--foreground)] mb-2">
-            BidVerify
+            BIDGUARD AI
           </h1>
           <p className="text-[var(--foreground-secondary)]">
-            Sign in to your account
+            Login to your account
           </p>
         </div>
 

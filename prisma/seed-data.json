@@ -1,0 +1,7 @@
+{
+  "users": [
+    { "email": "sunil.kumar@abcindustries.example", "password": "password123", "name": "Sunil Kumar", "role": "BIDDER" },
+    { "email": "admin@bidverify.ai", "password": "admin@bidverify2026", "name": "System Admin", "role": "SUPER_ADMIN" }
+  ],
+  "note": "Password for both: password123 (bidder) and admin@bidverify2026 (admin)"
+}

@@ -58,7 +58,7 @@ model Organization {
   gstin              String?
   udyamNumber        String?
   cin                String?
-  registeredAddress  String?   @db.Text
+  registeredAddress  String?   
   state              String?
   city               String?
   pincode            String?
@@ -83,7 +83,7 @@ model Tender {
   id                 String    @id @default(cuid())
   tenderNumber       String    @unique
   title              String
-  description        String    @default("") @db.Text
+  description        String    @default("") 
   buyerOrganization  String
   department         String?
   category           String?
@@ -135,13 +135,13 @@ model TenderRequirement {
   code             String
   type             String
   title            String
-  description      String   @default("") @db.Text
+  description      String   @default("") 
   mandatory        Boolean  @default(true)
   evidenceRequired Boolean  @default(true)
   paramsJson       Json     @default("{}")
   sourceDocument   String?
   page             Int?
-  sourceText       String?  @db.Text
+  sourceText       String?  
   confidence       Float?
   extractionMethod String   @default("AI")
   status           String   @default("DRAFT")
@@ -193,12 +193,12 @@ model BidSubmission {
   complianceScore     Float?
   riskLevel           String?
   riskScore           Float?
-  aiRecommendation    String?   @db.Text
+  aiRecommendation    String?   
   aiRecommendationJson Json?
   officerDecision     String?
   decisionById        String?
   decisionAt          DateTime?
-  decisionNotes       String?   @db.Text
+  decisionNotes       String?   
   documents           BidDocument[]
   verifications       VerificationResult[]
   complianceResults   ComplianceResult[]
@@ -227,7 +227,7 @@ model BidDocument {
   status                   String   @default("UPLOADED")
   score                    Float?
   classificationConfidence Float?
-  processingError          String?  @db.Text
+  processingError          String?  
   fields                   ExtractedField[]
   uploadedById             String?
   createdAt                DateTime @default(now())
@@ -239,7 +239,7 @@ model ExtractedField {
   documentId     String
   document       BidDocument @relation(fields: [documentId], references: [id])
   field          String
-  value          String   @db.Text
+  value          String   
   page           Int?
   boundingBoxJson Json?
   confidence     Float?
@@ -268,7 +268,7 @@ model ComplianceRule {
   id              String   @id @default(cuid())
   code            String   @unique
   name            String
-  description     String   @default("") @db.Text
+  description     String   @default("") 
   requirementType String
   expressionJson  Json     @default("{}")
   weight          Float    @default(1.0)
@@ -303,11 +303,11 @@ model ComplianceResult {
   ruleCode       String?
   ruleVersion    Int?
   result         String
-  explanation    String   @default("") @db.Text
+  explanation    String   @default("") 
   detailsJson    Json     @default("{}")
   overridden     Boolean  @default(false)
   overrideById   String?
-  overrideReason String?  @db.Text
+  overrideReason String?  
   overrideResult String?
   overrideAt     DateTime?
   evaluatedAt    DateTime @default(now())
@@ -326,8 +326,8 @@ model EvidenceItem {
   verificationId    String?
   label             String
   page              Int?
-  extractedValue    String?  @db.Text
-  officialValue     String?  @db.Text
+  extractedValue    String?  
+  officialValue     String?  
   comparisonJson    Json?
   createdAt         DateTime @default(now())
 }
@@ -338,11 +338,11 @@ model Anomaly {
   submission   BidSubmission @relation(fields: [submissionId], references: [id])
   kind         String
   severity     String   @default("MEDIUM")
-  description  String   @db.Text
+  description  String   
   status       String   @default("OPEN")
   resolvedById String?
   resolvedAt   DateTime?
-  resolution   String?  @db.Text
+  resolution   String?  
   createdAt    DateTime @default(now())
 }
 
@@ -367,7 +367,7 @@ model AiRun {
   outputJson    Json?
   tokensUsed    Int?
   durationMs    Int?
-  error         String?  @db.Text
+  error         String?  
   createdById   String?
   createdAt     DateTime @default(now())
 }
@@ -377,7 +377,7 @@ model Notification {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   title     String
-  body      String   @default("") @db.Text
+  body      String   @default("") 
   kind      String   @default("INFO")
   link      String?
   read      Boolean  @default(false)
@@ -408,7 +408,7 @@ model AuditLog {
   entityId   String?
   beforeJson Json?
   afterJson  Json?
-  reason     String?  @db.Text
+  reason     String?  
   ip         String?
   createdAt  DateTime @default(now())
 
@@ -467,15 +467,15 @@ model DocumentVault {
   pan               String?
   issueDate         DateTime?
   expiryDate        DateTime?
-  address           String?   @db.Text
+  address           String?   
   authorizedPerson  String?
   // Status
   status            String    @default("UPLOADED") // UPLOADED | PROCESSING | PROCESSED | VERIFIED | NEEDS_REVIEW | EXPIRED | INVALID | FAILED
   verificationStatus String   @default("NOT_VERIFIED") // NOT_VERIFIED | VERIFIED | FAILED | NEEDS_REVIEW
   classificationConfidence Float?
-  processingError   String?   @db.Text
+  processingError   String?   
   intelligenceScore Int?
-  intelligenceJson  String?   @db.Text
+  intelligenceJson  String?   
   isActive          Boolean   @default(true)
   // Relations
   versions          DocumentVault[] @relation("VaultVersionChain")
@@ -495,7 +495,7 @@ model VaultDocumentExtraction {
   vaultDocumentId String
   vaultDocument  DocumentVault @relation(fields: [vaultDocumentId], references: [id])
   field          String
-  value          String   @db.Text
+  value          String   
   page           Int?
   confidence     Float?
   source         String   @default("AI")
@@ -516,15 +516,15 @@ model TenderRequirementConfig {
   requirementTitle    String
   requirementType     String
   mandatory           Boolean  @default(true)
-  description         String   @default("") @db.Text
-  allowedDocTypes     Json     @default("[]") // ["GST_CERTIFICATE", "PAN_CARD", ...]
+  description         String   @default("") 
+  allowedDocTypes     Json
   multipleDocumentsAllowed Boolean @default(false)
-  eligibilityCondition Json   @default("{}")
+  eligibilityCondition Json
   expiryRequired      Boolean  @default(false)
   verificationRequired Boolean @default(false)
   declarationRequired Boolean  @default(false)
-  formFieldsSchema    Json     @default("[]") // dynamic form fields for this requirement
-  status              String   @default("ACTIVE") // ACTIVE | FROZEN | ARCHIVED
+  formFieldsSchema    Json
+  status              String   @default("ACTIVE")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -578,7 +578,7 @@ model ApplicationDocument {
   requirementCode String?
   matchType       String   @default("AUTO") // AUTO | MANUAL | UPLOADED
   matchConfidence Float?
-  matchReason     String?  @db.Text
+  matchReason     String?  
   // For manually uploaded docs (not from vault)
   uploadedFileName String?
   uploadedFileType String?
@@ -602,7 +602,7 @@ model ApplicationFormValue {
   applicationId   String
   application     Application @relation(fields: [applicationId], references: [id])
   fieldKey        String
-  fieldValue      String   @default("") @db.Text
+  fieldValue      String   @default("") 
   autoFilled      Boolean  @default(false)
   autoFillSource  String?  // "organization_profile" | "document_extraction"
   required        Boolean  @default(false)
