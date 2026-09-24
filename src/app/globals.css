@@ -3,11 +3,9 @@
 /* ─────────────────────────────────────────────────────────────
    BidVerify — Minimal Light Design System (ui-ux-pro-max)
    Style: Minimalism & Swiss Style
-   Font: Inter (single family, weight variations)
+   Font: Inter (loaded via next/font — no render blocking)
    Colors: Monochrome + blue accent
    ───────────────────────────────────────────────────────────── */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --background: #0A0A0C;
@@ -37,7 +35,6 @@ html { scroll-behavior: smooth; }
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 15px;

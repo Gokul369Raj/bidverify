@@ -2,16 +2,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import LoginModal from "@/components/LoginModal";
+import { Suspense, lazy } from "react";
 import SiteNav from "@/components/SiteNav";
 import HeroImage from "@/components/HeroImage";
 import { Logo } from "@/components/Logo";
-import ChatBot from "@/components/ChatBot";
 import { useSession } from "@/lib/useSession";
 import {
   ArrowRight, Shield, FileText, CheckCircle, BarChart3,
   AlertTriangle, Users, ChevronDown,
 } from "lucide-react";
+
+const ChatBot = lazy(() => import("@/components/ChatBot"));
+const LoginModal = lazy(() => import("@/components/LoginModal"));
 
 interface PlatformStats {
   totalTenders: number; activeTenders: number; registeredBidders: number;
@@ -268,8 +270,12 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
-      <ChatBot context="landing" />
+      <Suspense fallback={null}>
+        <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ChatBot context="landing" />
+      </Suspense>
     </div>
   );
 }

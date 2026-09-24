@@ -4,8 +4,12 @@ import { ok, handle } from "@/lib/api";
 /**
  * Public tender listing — no authentication required.
  * Bidders can browse tenders without logging in.
- * Supports search, category, state, status filters, and pagination.
+ * In-memory cache for 30s to reduce Supabase round-trips.
  */
+
+let cache: { key: string; data: unknown; ts: number } | null = null;
+const CACHE_TTL = 30_000;
+
 export async function GET(req: Request) {
   return handle(async () => {
     const url = new URL(req.url);
@@ -17,6 +21,18 @@ export async function GET(req: Request) {
     const msmeFriendly = url.searchParams.get("msme") === "true";
     const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1"));
     const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20")));
+
+    // Cache key based on query params (skip for search queries — too many variants)
+    const cacheKey = `${status}|${category}|${state}|${closingSoon}|${msmeFriendly}|${page}|${limit}`;
+    const canCache = !q && !msmeFriendly;
+    const now = Date.now();
+
+    if (canCache && cache && cache.key === cacheKey && now - cache.ts < CACHE_TTL) {
+      const res = ok(cache.data);
+      res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+      return res;
+    }
+
     const skip = (page - 1) * limit;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,9 +98,17 @@ export async function GET(req: Request) {
       requirementTypes: [...new Set(t.requirements.map((r) => r.type))],
     }));
 
-    return ok({
+    const data = {
       tenders: publicTenders,
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
+    };
+
+    if (canCache) {
+      cache = { key: cacheKey, data, ts: now };
+    }
+
+    const res = ok(data);
+    res.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=60");
+    return res;
   });
 }
