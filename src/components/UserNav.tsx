@@ -1,6 +1,7 @@
 "use client";
+
 import { useEffect, useState } from "react";
-import { LogOut, User, LayoutDashboard, Bell, ChevronUp } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Bell, ChevronDown } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { signOut } from "@/lib/session";
 
@@ -27,49 +28,68 @@ export default function UserNav() {
     window.location.href = "/";
   }
 
-  const itemClass = "flex items-center gap-3 px-4 py-2.5 text-[14px] text-[#f5f5f7] hover:bg-white/10 transition-colors rounded-lg mx-1.5";
+  const itemClass =
+    "flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-medium text-[var(--foreground-secondary)] hover:bg-[var(--navy-50)] hover:text-[var(--navy-800)] transition-colors";
 
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
         aria-label="Account menu"
-        className="flex items-center gap-1 cursor-pointer group"
+        aria-expanded={open}
+        className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-[var(--radius)] border border-transparent hover:border-[var(--border)] hover:bg-[var(--navy-50)] transition-colors cursor-pointer"
       >
-        <span className="w-8 h-8 bg-gradient-to-b from-[#2997ff] to-[#0066cc] text-white rounded-full flex items-center justify-center text-xs font-medium tracking-wide group-hover:brightness-110 transition-all ring-1 ring-white/20">
+        <span className="w-8 h-8 rounded-full bg-[var(--navy-800)] text-white flex items-center justify-center text-[11px] font-bold tracking-wide shrink-0">
           {initials}
         </span>
-        <ChevronUp className={`w-3 h-3 text-[#86868b] transition-transform ${open ? "" : "rotate-180"}`} />
+        <span className="hidden sm:block text-[13.5px] font-semibold text-[var(--foreground)] max-w-[110px] truncate">
+          {user.name.split(" ")[0]}
+        </span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-[var(--foreground-tertiary)] transition-transform ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-12 w-64 bg-[#1C1C1E] border border-white/12 rounded-2xl shadow-2xl z-50 overflow-hidden py-1">
-            <div className="px-4 py-3.5 border-b border-white/10">
-              <div className="font-semibold text-sm text-[#f5f5f7]">{user.name}</div>
-              <div className="text-xs text-[#86868b] truncate mt-0.5">{user.email}</div>
-              <div className="text-[11px] text-[#2997ff] mt-1 capitalize">{user.role.replace(/_/g, " ").toLowerCase()}</div>
+          <div className="absolute right-0 top-[52px] w-[280px] bg-white border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] z-50 overflow-hidden">
+            <div className="px-4 py-3.5 bg-[var(--navy-50)] border-b border-[var(--border)]">
+              <div className="text-[13.5px] font-bold text-[var(--navy-800)] truncate">{user.name}</div>
+              <div className="text-[12px] text-[var(--foreground-tertiary)] truncate mt-0.5">{user.email}</div>
+              <span className="inline-block mt-2 badge badge-navy">
+                {user.role.replace(/_/g, " ")}
+              </span>
             </div>
+
             <div className="py-1.5">
               <a href={dashboardLink} className={itemClass}>
-                <LayoutDashboard className="w-4 h-4 text-[#2997ff]" strokeWidth={1.75} /> Dashboard
+                <LayoutDashboard className="w-4 h-4 text-[var(--navy-600)] shrink-0" strokeWidth={2} aria-hidden="true" />
+                Dashboard
               </a>
               <a href={dashboardLink + "/profile"} className={itemClass}>
-                <User className="w-4 h-4 text-[#86868b]" strokeWidth={1.75} /> Profile
+                <User className="w-4 h-4 text-[var(--foreground-tertiary)] shrink-0" strokeWidth={2} aria-hidden="true" />
+                Profile
               </a>
-              <a href={dashboardLink + "/notifications"} className={`${itemClass} ${open ? "" : ""}`}>
-                <Bell className="w-4 h-4 text-[#86868b]" strokeWidth={1.75} /> Notifications
+              <a href={dashboardLink + "/notifications"} className={itemClass}>
+                <Bell className="w-4 h-4 text-[var(--foreground-tertiary)] shrink-0" strokeWidth={2} aria-hidden="true" />
+                Notifications
                 {typeof user.unreadNotifications === "number" && user.unreadNotifications > 0 && (
-                  <span className="ml-auto bg-[#ff453a] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto bg-[var(--danger)] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                     {user.unreadNotifications > 9 ? "9+" : user.unreadNotifications}
                   </span>
                 )}
               </a>
             </div>
-            <div className="border-t border-white/10 py-1.5">
-              <button onClick={handleSignOut} className={`w-full ${itemClass} !text-[#ff6961] cursor-pointer`}>
-                <LogOut className="w-4 h-4" strokeWidth={1.75} /> Sign Out
+
+            <div className="border-t border-[var(--border)] py-1.5">
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-medium text-[var(--danger)] hover:bg-[var(--danger-light)] transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+                Sign Out
               </button>
             </div>
           </div>

@@ -1,9 +1,30 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
-import { Shield, Loader2, Building2 } from "lucide-react";
+import { Emblem } from "@/components/Emblem";
+import AuthPanel from "@/components/AuthPanel";
 import { INDIAN_STATES } from "@/lib/constants";
 import { clearSessionCache } from "@/lib/session";
+import {
+  Loader2, Building2, AlertCircle, ArrowLeft, ArrowRight, Check,
+  UserRound, Landmark, CircleCheck, FileText,
+} from "lucide-react";
+
+const ORG_TYPES = [
+  { value: "PRIVATE_LIMITED", label: "Private Limited" },
+  { value: "PUBLIC_LIMITED", label: "Public Limited" },
+  { value: "LLP", label: "LLP" },
+  { value: "PROPRIETORSHIP", label: "Proprietorship" },
+  { value: "PARTNERSHIP", label: "Partnership" },
+];
+
+const BIZ_CATEGORIES = [
+  { value: "MANUFACTURER", label: "Manufacturer" },
+  { value: "TRADER", label: "Trader" },
+  { value: "SERVICE_PROVIDER", label: "Service Provider" },
+  { value: "CONSULTANT", label: "Consultant" },
+];
 
 export default function RegisterPage() {
   const [error, setError] = useState("");
@@ -49,159 +70,355 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl text-white text-sm px-4 py-3 outline-none focus:border-[var(--saffron)] focus:ring-1 focus:ring-[var(--saffron)]/30 placeholder-blue-200/30 transition-all";
-  const labelClass = "block text-sm font-medium text-blue-200/80 mb-1.5";
+  const input = "input-field";
   const col = "grid grid-cols-1 sm:grid-cols-2 gap-4";
+  const step1Valid = form.name.trim() && form.email.trim() && form.password.length >= 8;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B1D3A] via-[#0F2847] to-[#162D52] py-12 px-4">
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
-      <div className="relative max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-[var(--saffron)] to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-7 h-7 text-white" />
-            </div>
-            <div className="text-left">
-              <div className="text-white font-bold text-2xl leading-none">BIDGUARD <span className="text-[var(--saffron)]">AI</span></div>
-              <div className="text-blue-200/40 text-xs mt-0.5">Secure Procurement. Stronger India.</div>
-            </div>
+    <div className="min-h-screen flex bg-[var(--surface-2)]">
+      <AuthPanel
+        title="Register once. Bid with confidence across every tender."
+        subtitle="Create your organisation profile and build a verified document locker that you can reuse for every future government tender."
+        points={[
+          "One-time KYC — PAN, GSTIN, Udyam & CIN verified",
+          "Reusable Entity Locker for all future submissions",
+          "Pre-submission compliance check before you bid",
+        ]}
+      />
+
+      <div className="flex-1 flex flex-col min-h-screen">
+        <div className="tricolor-bar lg:hidden" />
+
+        <div className="lg:hidden flex items-center justify-between gap-3 px-5 py-3.5 bg-white border-b border-[var(--border)]">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Emblem height={34} />
+            <span className="text-[15px] font-extrabold text-[var(--navy-800)] tracking-tight">
+              BidGuard<span className="text-[var(--saffron-500)]"> AI</span>
+            </span>
           </Link>
-          <h1 className="text-2xl font-bold text-white">Create Bidder Account</h1>
-          <p className="text-sm text-blue-200/60 mt-1"><Link href="/" className="text-[var(--saffron)] hover:text-[var(--saffron-light)]">← Back to Home</Link></p>
+          <Link href="/login" className="text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)]">
+            Sign in
+          </Link>
         </div>
 
-        <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl border border-white/10 p-6 sm:p-8">
-          {registered && (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Successfully Registered!</h2>
-              <p className="text-blue-200/60 mb-1">Welcome, <span className="font-semibold text-white">{registered.name}</span></p>
-              <p className="text-sm text-blue-200/40 mb-6">{registered.email}</p>
-              <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 text-sm text-green-300 mb-6">
-                Your bidder account has been created. You are now logged in!
-              </div>
-              <div className="flex flex-col gap-3">
-                <a href="/bidder" onClick={() => clearSessionCache()} className="inline-flex items-center justify-center gap-2 bg-[var(--saffron)] text-white font-medium px-6 py-3 rounded-xl hover:bg-[var(--saffron-dark)] transition-colors text-sm shadow-lg">
-                  Go to Dashboard →
-                </a>
-                <Link href="/" className="inline-flex items-center justify-center gap-2 border border-white/10 text-white font-medium px-6 py-3 rounded-xl hover:bg-white/5 transition-colors text-sm">
-                  ← Go to Home
-                </Link>
-              </div>
-            </div>
-          )}
+        <div className="flex-1 flex justify-center px-5 py-10 sm:py-12 overflow-y-auto">
+          <div className="w-full max-w-[660px]">
+            <Link
+              href="/"
+              className="hidden lg:inline-flex items-center gap-2 text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] transition-colors mb-6"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+              Back to portal home
+            </Link>
 
-          {!registered && (
-            <>
-              {error && <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-300 text-sm rounded-xl px-4 py-3">{error}</div>}
-
-              {/* Step Indicator */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className={`flex items-center gap-2 text-sm font-medium ${step === 1 ? "text-[var(--saffron)]" : "text-blue-200/40"}`}>
-                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? "bg-[var(--saffron)] text-white" : "bg-white/10 text-blue-200/40"}`}>1</span>
-                  Account
+            {/* ═══════ Success state ═══════ */}
+            {registered ? (
+              <div className="bg-white rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow)] p-8 sm:p-10 text-center">
+                <div className="w-16 h-16 rounded-full bg-[var(--green-100)] flex items-center justify-center mx-auto mb-5">
+                  <CircleCheck className="w-9 h-9 text-[var(--green-600)]" aria-hidden="true" />
                 </div>
-                <div className="flex-1 h-px bg-white/10" />
-                <div className={`flex items-center gap-2 text-sm font-medium ${step === 2 ? "text-[var(--saffron)]" : "text-blue-200/40"}`}>
-                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? "bg-[var(--saffron)] text-white" : "bg-white/10 text-blue-200/40"}`}>2</span>
-                  Organization
+                <h2 className="text-[24px] font-extrabold text-[var(--navy-800)] mb-2">
+                  Registration successful
+                </h2>
+                <p className="text-[14px] text-[var(--foreground-secondary)] mb-1">
+                  Welcome aboard, <span className="font-bold text-[var(--foreground)]">{registered.name}</span>
+                </p>
+                <p className="text-[13px] text-[var(--foreground-tertiary)] mb-7">{registered.email}</p>
+
+                <div className="notice notice-success text-left mb-7">
+                  <Check className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                  <span>
+                    Your bidder account is active and you are now signed in. Complete your
+                    organisation profile and upload documents to build your compliance passport.
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <a
+                    href="/bidder"
+                    onClick={() => clearSessionCache()}
+                    className="btn btn-navy btn-lg w-full"
+                  >
+                    Go to Dashboard <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </a>
+                  <Link href="/" className="btn btn-outline w-full">
+                    Return to Portal Home
+                  </Link>
                 </div>
               </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <span className="badge badge-saffron mb-3">Bidder Registration</span>
+                  <h1 className="text-[27px] font-extrabold text-[var(--navy-800)] tracking-tight leading-tight">
+                    Create your account
+                  </h1>
+                  <p className="text-[14px] text-[var(--foreground-secondary)] mt-2">
+                    Two quick steps — account credentials, then your organisation details.
+                  </p>
+                </div>
 
-              <form onSubmit={handleSubmit}>
-                {step === 1 && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className={labelClass}>Full Name</label>
-                      <input className={inputClass} required value={form.name} onChange={e => set("name", e.target.value)} placeholder="Your full name" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Email</label>
-                      <input className={inputClass} type="email" required value={form.email} onChange={e => set("email", e.target.value)} placeholder="you@company.com" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>Password (min 8 chars)</label>
-                      <input className={inputClass} type="password" required minLength={8} value={form.password} onChange={e => set("password", e.target.value)} placeholder="••••••••" />
-                    </div>
-                    <button type="button" onClick={() => { if (form.name && form.email && form.password.length >= 8) setStep(2); }} className="w-full bg-[var(--saffron)] text-white font-semibold py-3 rounded-xl hover:bg-[var(--saffron-dark)] transition-all shadow-lg shadow-saffron/20">
-                      Next →
-                    </button>
-                  </div>
-                )}
+                {/* Step indicator */}
+                <div className="flex items-center gap-3 mb-6">
+                  {[
+                    { n: 1, label: "Account", icon: UserRound },
+                    { n: 2, label: "Organisation", icon: Building2 },
+                  ].map((s, i) => {
+                    const active = step === s.n;
+                    const done = step > s.n;
+                    return (
+                      <div key={s.n} className="flex items-center gap-3 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold transition-colors ${
+                              done
+                                ? "bg-[var(--green-600)] text-white"
+                                : active
+                                ? "bg-[var(--navy-800)] text-white"
+                                : "bg-[var(--surface-3)] text-[var(--foreground-tertiary)]"
+                            }`}
+                          >
+                            {done ? <Check className="w-4 h-4" aria-hidden="true" /> : <s.icon className="w-4 h-4" aria-hidden="true" />}
+                          </span>
+                          <span
+                            className={`text-[13.5px] font-bold ${
+                              active || done ? "text-[var(--navy-800)]" : "text-[var(--foreground-tertiary)]"
+                            }`}
+                          >
+                            {s.label}
+                          </span>
+                        </div>
+                        {i === 0 && (
+                          <span className={`flex-1 h-[2px] rounded ${step > 1 ? "bg-[var(--green-600)]" : "bg-[var(--border)]"}`} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
 
-                {step === 2 && (
-                  <div className="space-y-4">
-                    <div className={col}>
-                      <div><label className={labelClass}>Legal Name *</label><input className={inputClass} required value={form.org.legalName} onChange={e => set("org.legalName", e.target.value)} placeholder="Company Legal Name" /></div>
-                      <div><label className={labelClass}>Trade Name</label><input className={inputClass} value={form.org.tradeName} onChange={e => set("org.tradeName", e.target.value)} placeholder="Brand/Trade Name" /></div>
+                <div className="bg-white rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow)] p-6 sm:p-8">
+                  {error && (
+                    <div className="notice notice-danger mb-5" role="alert">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                      <span>{error}</span>
                     </div>
-                    <div className={col}>
-                      <div><label className={labelClass}>PAN</label><input className={inputClass} value={form.org.pan} onChange={e => set("org.pan", e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} /></div>
-                      <div><label className={labelClass}>GSTIN</label><input className={inputClass} value={form.org.gstin} onChange={e => set("org.gstin", e.target.value.toUpperCase())} placeholder="27ABCDE1234F1Z5" maxLength={15} /></div>
-                    </div>
-                    <div className={col}>
-                      <div><label className={labelClass}>Udyam / MSME Number</label><input className={inputClass} value={form.org.udyamNumber} onChange={e => set("org.udyamNumber", e.target.value.toUpperCase())} placeholder="UDYAM-MH-01-0012345" /></div>
-                      <div><label className={labelClass}>Phone</label><input className={inputClass} value={form.org.phone} onChange={e => set("org.phone", e.target.value)} placeholder="+91 XXXXX XXXXX" /></div>
-                    </div>
-                    <div><label className={labelClass}>Registered Address</label><input className={inputClass} value={form.org.registeredAddress} onChange={e => set("org.registeredAddress", e.target.value)} placeholder="Full registered address" /></div>
-                    <div className={col}>
-                      <div>
-                        <label className={labelClass}>State</label>
-                        <select className={inputClass} value={form.org.state} onChange={e => set("org.state", e.target.value)}>
-                          <option value="">Select state</option>
-                          {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                  )}
+
+                  <form onSubmit={handleSubmit}>
+                    {/* ═══ Step 1 — Account ═══ */}
+                    {step === 1 && (
+                      <div className="space-y-5">
+                        <div>
+                          <label htmlFor="name" className="field-label">Full Name <span className="text-[var(--danger)]">*</span></label>
+                          <input
+                            id="name" className={input} required
+                            value={form.name}
+                            onChange={(e) => set("name", e.target.value)}
+                            placeholder="As per PAN records"
+                            autoComplete="name"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="reg-email" className="field-label">Email ID <span className="text-[var(--danger)]">*</span></label>
+                          <input
+                            id="reg-email" className={input} type="email" required
+                            value={form.email}
+                            onChange={(e) => set("email", e.target.value)}
+                            placeholder="you@organisation.com"
+                            autoComplete="email"
+                          />
+                          <p className="field-hint">All tender alerts and verification results are sent here.</p>
+                        </div>
+                        <div>
+                          <label htmlFor="reg-password" className="field-label">Password <span className="text-[var(--danger)]">*</span></label>
+                          <input
+                            id="reg-password" className={input} type="password" required minLength={8}
+                            value={form.password}
+                            onChange={(e) => set("password", e.target.value)}
+                            placeholder="Minimum 8 characters"
+                            autoComplete="new-password"
+                          />
+                          <p className="field-hint">Use at least 8 characters with a mix of letters and numbers.</p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!step1Valid}
+                          onClick={() => step1Valid && setStep(2)}
+                          className="btn btn-navy btn-lg w-full"
+                        >
+                          Continue to Organisation <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        </button>
                       </div>
-                      <div><label className={labelClass}>City</label><input className={inputClass} value={form.org.city} onChange={e => set("org.city", e.target.value)} placeholder="City" /></div>
-                    </div>
-                    <div className={col}>
-                      <div>
-                        <label className={labelClass}>Organization Type</label>
-                        <select className={inputClass} value={form.org.organizationType} onChange={e => set("org.organizationType", e.target.value)}>
-                          <option value="">Select</option>
-                          <option value="PRIVATE_LIMITED">Private Limited</option>
-                          <option value="PUBLIC_LIMITED">Public Limited</option>
-                          <option value="LLP">LLP</option>
-                          <option value="PROPRIETORSHIP">Proprietorship</option>
-                          <option value="PARTNERSHIP">Partnership</option>
-                        </select>
+                    )}
+
+                    {/* ═══ Step 2 — Organisation ═══ */}
+                    {step === 2 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-[15px] font-bold text-[var(--navy-800)] mb-1 flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+                            Organisation Identity
+                          </h2>
+                          <p className="text-[12.5px] text-[var(--foreground-tertiary)] mb-4">
+                            Details are matched against MCA21, GSTN and Udyam records during verification.
+                          </p>
+                          <div className={col}>
+                            <div>
+                              <label className="field-label">Legal Name <span className="text-[var(--danger)]">*</span></label>
+                              <input className={input} required value={form.org.legalName} onChange={(e) => set("org.legalName", e.target.value)} placeholder="As per MCA / PAN" />
+                            </div>
+                            <div>
+                              <label className="field-label">Trade Name</label>
+                              <input className={input} value={form.org.tradeName} onChange={(e) => set("org.tradeName", e.target.value)} placeholder="Brand / trade name" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h2 className="text-[15px] font-bold text-[var(--navy-800)] mb-1 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+                            Statutory Registrations
+                          </h2>
+                          <p className="text-[12.5px] text-[var(--foreground-tertiary)] mb-4">
+                            Enter these exactly as printed on your certificates.
+                          </p>
+                          <div className={col}>
+                            <div>
+                              <label className="field-label">PAN</label>
+                              <input className={`${input} mono`} value={form.org.pan} onChange={(e) => set("org.pan", e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} />
+                            </div>
+                            <div>
+                              <label className="field-label">GSTIN</label>
+                              <input className={`${input} mono`} value={form.org.gstin} onChange={(e) => set("org.gstin", e.target.value.toUpperCase())} placeholder="27ABCDE1234F1Z5" maxLength={15} />
+                            </div>
+                            <div>
+                              <label className="field-label">Udyam / MSME Number</label>
+                              <input className={`${input} mono`} value={form.org.udyamNumber} onChange={(e) => set("org.udyamNumber", e.target.value.toUpperCase())} placeholder="UDYAM-MH-01-0012345" />
+                            </div>
+                            <div>
+                              <label className="field-label">CIN</label>
+                              <input className={`${input} mono`} value={form.org.cin} onChange={(e) => set("org.cin", e.target.value.toUpperCase())} placeholder="L12345MH2000PLC000000" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="field-label">Contact Phone</label>
+                              <input className={input} value={form.org.phone} onChange={(e) => set("org.phone", e.target.value)} placeholder="+91 98765 43210" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h2 className="text-[15px] font-bold text-[var(--navy-800)] mb-1 flex items-center gap-2">
+                            <Landmark className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+                            Registered Address
+                          </h2>
+                          <p className="text-[12.5px] text-[var(--foreground-tertiary)] mb-4">
+                            Used for local-content and state-specific eligibility rules.
+                          </p>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="field-label">Address</label>
+                              <input className={input} value={form.org.registeredAddress} onChange={(e) => set("org.registeredAddress", e.target.value)} placeholder="Building, street, locality" />
+                            </div>
+                            <div className={col}>
+                              <div>
+                                <label className="field-label">State / UT</label>
+                                <select className={input} value={form.org.state} onChange={(e) => set("org.state", e.target.value)}>
+                                  <option value="">Select state</option>
+                                  {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="field-label">City / District</label>
+                                <input className={input} value={form.org.city} onChange={(e) => set("org.city", e.target.value)} placeholder="City" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h2 className="text-[15px] font-bold text-[var(--navy-800)] mb-1">Classification</h2>
+                          <p className="text-[12.5px] text-[var(--foreground-tertiary)] mb-4">
+                            Determines exemptions and preference policies applied to your bids.
+                          </p>
+                          <div className={col}>
+                            <div>
+                              <label className="field-label">Organisation Type</label>
+                              <select className={input} value={form.org.organizationType} onChange={(e) => set("org.organizationType", e.target.value)}>
+                                <option value="">Select type</option>
+                                {ORG_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="field-label">Business Category</label>
+                              <select className={input} value={form.org.businessCategory} onChange={(e) => set("org.businessCategory", e.target.value)}>
+                                <option value="">Select category</option>
+                                {BIZ_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                              </select>
+                            </div>
+                          </div>
+
+                          <fieldset className="mt-4">
+                            <legend className="field-label mb-2.5">Applicable Status</legend>
+                            <div className="flex flex-wrap gap-2.5">
+                              {[
+                                { key: "isMsme", label: "MSME / Udyam Registered" },
+                                { key: "isStartup", label: "Startup (DPIIT)" },
+                                { key: "isOem", label: "OEM" },
+                              ].map((c) => {
+                                const checked = form.org[c.key as "isMsme" | "isStartup" | "isOem"];
+                                return (
+                                  <label
+                                    key={c.key}
+                                    className={`inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-[var(--radius)] border-[1.5px] cursor-pointer text-[13px] font-semibold transition-colors ${
+                                      checked
+                                        ? "bg-[var(--navy-100)] border-[var(--navy-600)] text-[var(--navy-700)]"
+                                        : "bg-white border-[var(--border)] text-[var(--foreground-secondary)] hover:border-[var(--navy-500)]"
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only"
+                                      checked={checked}
+                                      onChange={(e) => set("org." + c.key, e.target.checked)}
+                                    />
+                                    <span className={`w-4 h-4 rounded-[4px] border-[1.5px] flex items-center justify-center shrink-0 ${checked ? "bg-[var(--navy-800)] border-[var(--navy-800)]" : "border-[var(--gray-300)]"}`}>
+                                      {checked && <Check className="w-3 h-3 text-white" aria-hidden="true" />}
+                                    </span>
+                                    {c.label}
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </fieldset>
+                        </div>
+
+                        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                          <button type="button" onClick={() => setStep(1)} className="btn btn-outline sm:flex-1">
+                            <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back
+                          </button>
+                          <button type="submit" disabled={loading} className="btn btn-saffron sm:flex-[2]">
+                            {loading ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Creating account…</>
+                            ) : (
+                              <><Building2 className="w-4 h-4" aria-hidden="true" /> Create Account</>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <label className={labelClass}>Business Category</label>
-                        <select className={inputClass} value={form.org.businessCategory} onChange={e => set("org.businessCategory", e.target.value)}>
-                          <option value="">Select</option>
-                          <option value="MANUFACTURER">Manufacturer</option>
-                          <option value="TRADER">Trader</option>
-                          <option value="SERVICE_PROVIDER">Service Provider</option>
-                          <option value="CONSULTANT">Consultant</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="flex gap-6">
-                      <label className="flex items-center gap-2 text-sm text-white"><input type="checkbox" checked={form.org.isMsme} onChange={e => set("org.isMsme", e.target.checked)} className="rounded" /> MSME</label>
-                      <label className="flex items-center gap-2 text-sm text-white"><input type="checkbox" checked={form.org.isStartup} onChange={e => set("org.isStartup", e.target.checked)} className="rounded" /> Startup (DPIIT)</label>
-                      <label className="flex items-center gap-2 text-sm text-white"><input type="checkbox" checked={form.org.isOem} onChange={e => set("org.isOem", e.target.checked)} className="rounded" /> OEM</label>
-                    </div>
-                    <div className="flex gap-3">
-                      <button type="button" onClick={() => setStep(1)} className="flex-1 border border-white/10 text-white font-medium py-3 rounded-xl hover:bg-white/5 text-sm transition-colors">← Back</button>
-                      <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 bg-[var(--saffron)] text-white font-semibold py-3 rounded-xl hover:bg-[var(--saffron-dark)] text-sm disabled:opacity-50 shadow-lg shadow-saffron/20">
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
-                        Create Account
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </form>
-            </>
-          )}
+                    )}
+                  </form>
+                </div>
+
+                <p className="text-center text-[13px] text-[var(--foreground-secondary)] mt-5">
+                  Already registered?{" "}
+                  <Link href="/login" className="font-semibold text-[var(--navy-700)] hover:underline">
+                    Sign in to your account
+                  </Link>
+                </p>
+              </>
+            )}
+          </div>
         </div>
-
-        <p className="text-center text-[10px] text-blue-200/25 mt-6">
-          Smart India Hackathon 2026 • Team Anveshak 2.0
-        </p>
       </div>
     </div>
   );

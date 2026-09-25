@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
-import { Logo } from "@/components/Logo";
+import GovtFooter from "@/components/GovtFooter";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const IMPACT = [
@@ -128,18 +128,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 py-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6">
-            <Logo />
-            <Link href="/tenders" className="btn-secondary !py-2.5 !px-6 !text-sm">Explore Tenders</Link>
-          </div>
-          <div className="border-t border-[var(--border)] pt-5 flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="caption">© 2026 BIDGUARD AI — AI-Powered Bid Compliance Platform.</div>
-            <Link href="/" className="caption hover:text-[var(--foreground)] transition-colors">Back to home</Link>
-          </div>
-        </div>
-      </footer>
+      <GovtFooter />
     </div>
   );
 }

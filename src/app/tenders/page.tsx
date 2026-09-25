@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
+import GovtFooter from "@/components/GovtFooter";
 import LoginModal from "@/components/LoginModal";
 import { useSession } from "@/lib/useSession";
 import {
@@ -283,13 +284,7 @@ export default function TenderExplorerPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="caption">© 2026 BIDGUARD AI — Bid Compliance Platform.</div>
-          <Link href="/" className="caption hover:text-[var(--foreground)] transition-colors">Back to home</Link>
-        </div>
-      </footer>
+      <GovtFooter />
 
       <LoginModal open={showLogin} onClose={() => setShowLogin(false)} />
     </div>

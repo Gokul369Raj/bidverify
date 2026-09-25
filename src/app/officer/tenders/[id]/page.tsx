@@ -222,6 +222,13 @@ export default function OfficerTenderDetailPage() {
                           <Link href={`/officer/verification/${b.id}`} className="text-[var(--accent)] hover:opacity-80" title="View Details">
                             <Eye className="w-4 h-4" />
                           </Link>
+                          <Link
+                            href={`/officer/comparison?bidId=${b.id}`}
+                            className="text-[var(--navy-600)] hover:opacity-80"
+                            title="Requirement-wise compliance comparison"
+                          >
+                            <Scale className="w-4 h-4" />
+                          </Link>
                           {(b.status === "SUBMITTED" || b.status === "DRAFT") && (
                             <button onClick={() => startVerification(b.id)} disabled={verifying === b.id} className="text-[var(--warning)] hover:opacity-80" title="Start Verification">
                               {verifying === b.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}

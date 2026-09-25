@@ -1,13 +1,23 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  FileText, Users, ClipboardCheck, AlertTriangle, CheckCircle2, Upload,
-  TrendingUp, ArrowRight, Shield, Scale, BarChart3,
+  FileText, Users, ClipboardCheck, AlertTriangle, Scale, BarChart3,
+  Shield, ArrowRight, Upload, ChevronRight, CalendarDays, BadgeCheck,
+  Bell, TrendingUp,
 } from "lucide-react";
 
+interface OfficerData {
+   
+  tenders: any[];
+   
+  user: any;
+  notifications: { notifications: { id: string; title: string; body: string }[]; unread: number };
+}
+
 export default function OfficerDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<OfficerData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,155 +26,281 @@ export default function OfficerDashboard() {
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/notifications").then((r) => r.json()),
     ]).then(([tenders, me, notifs]) => {
-      setData({ tenders: tenders.ok ? tenders.data.tenders : [], user: me.ok ? me.data : null, notifications: notifs.ok ? notifs.data : { notifications: [], unread: 0 } });
+      setData({
+        tenders: tenders.ok ? tenders.data.tenders : [],
+        user: me.ok ? me.data : null,
+        notifications: notifs.ok ? notifs.data : { notifications: [], unread: 0 },
+      });
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="text-sm text-[var(--foreground-secondary)] animate-pulse">Loading dashboard...</div></div>;
-  if (!data) return <div className="text-center py-20 text-[var(--foreground-secondary)]">Failed to load</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-[104px] skeleton rounded-[var(--radius-lg)]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-[92px] skeleton rounded-[var(--radius-lg)]" />)}
+        </div>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-80 skeleton rounded-[var(--radius-lg)]" />
+          <div className="h-80 skeleton rounded-[var(--radius-lg)]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="text-center py-20">
+        <AlertTriangle className="w-9 h-9 text-[var(--warning)] mx-auto mb-3" aria-hidden="true" />
+        <p className="text-[14px] font-semibold text-[var(--foreground)]">Unable to load dashboard</p>
+      </div>
+    );
+  }
 
   const tenders = data.tenders;
-  const totalBids = tenders.reduce((s: number, t: any) => s + (t._count?.bids || 0), 0);
+  const totalBids = tenders.reduce((s: number, t) => s + (t._count?.bids || 0), 0);
+  const totalReqs = tenders.reduce((s: number, t) => s + (t._count?.requirements || 0), 0);
+  const closingSoon = tenders.filter((t) => {
+    const diff = new Date(t.closingDate).getTime() - Date.now();
+    return diff > 0 && diff < 7 * 86400000;
+  });
 
   const stats = [
-    { label: "Active Tenders", value: tenders.length, icon: FileText, color: "text-[var(--accent)]", bg: "bg-[var(--accent-light)]" },
-    { label: "Total Bids", value: totalBids, icon: Users, color: "text-[var(--accent)]", bg: "bg-[var(--accent-light)]" },
-    { label: "Pending Verification", value: 0, icon: ClipboardCheck, color: "text-[var(--warning)]", bg: "bg-[var(--warning-light)]" },
-    { label: "Requirements Tracked", value: tenders.reduce((s: number, t: any) => s + (t._count?.requirements || 0), 0), icon: Scale, color: "text-[var(--success)]", bg: "bg-[var(--success-light)]" },
+    { label: "Active Tenders", value: tenders.length, icon: FileText, tone: "navy" },
+    { label: "Bids Received", value: totalBids, icon: Users, tone: "green" },
+    { label: "Requirements Tracked", value: totalReqs, icon: Scale, tone: "amber" },
+    { label: "Closing This Week", value: closingSoon.length, icon: ClipboardCheck, tone: "red" },
   ];
+
+  const toneMap: Record<string, { bg: string; fg: string }> = {
+    navy: { bg: "var(--navy-100)", fg: "var(--navy-700)" },
+    amber: { bg: "var(--amber-100)", fg: "var(--amber-700)" },
+    red: { bg: "var(--red-100)", fg: "var(--red-600)" },
+    green: { bg: "var(--green-100)", fg: "var(--green-700)" },
+  };
+
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long", day: "2-digit", month: "long", year: "numeric",
+  });
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Procurement Dashboard</h1>
-          <p className="text-sm text-[var(--foreground-secondary)] mt-1">Overview of tenders, bids, and compliance status.</p>
-        </div>
-        <Link
-          href="/officer/tenders"
-          className="btn-primary text-sm"
-        >
-          <Upload className="w-4 h-4" />
-          Create Tender
-        </Link>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 ${s.bg} rounded-lg flex items-center justify-center`}>
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-[var(--foreground)]">{s.value}</div>
-                <div className="text-xs text-[var(--foreground-secondary)]">{s.label}</div>
-              </div>
-            </div>
+      {/* ═══════ Welcome banner ═══════ */}
+      <section className="rounded-[var(--radius-lg)] overflow-hidden bg-[var(--navy-800)] relative">
+        <div className="absolute inset-0 opacity-[0.10]" style={{
+          backgroundImage: "radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)",
+          backgroundSize: "22px 22px",
+        }} aria-hidden="true" />
+        <div className="relative px-6 py-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="min-w-0">
+            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[var(--saffron-400)] mb-1.5">
+              Procurement Officer Dashboard · {today}
+            </p>
+            <h1 className="text-[25px] font-extrabold text-white tracking-tight leading-tight">
+              Procurement Control Centre
+            </h1>
+            <p className="text-[13.5px] text-white/65 mt-1.5">
+              {data.user?.name ? `${data.user.name} — ` : ""}
+              overview of tenders, bids and compliance status across the department.
+            </p>
           </div>
-        ))}
-      </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Tenders List */}
-        <div className="lg:col-span-2 bg-[var(--surface)] border border-[var(--border)] rounded-xl">
-          <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-            <h2 className="font-semibold text-[var(--foreground)]">Tenders</h2>
-            <Link href="/officer/tenders" className="text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center gap-1">
-              Manage All <ArrowRight className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/officer/verification" className="btn btn-white">
+              <ClipboardCheck className="w-4 h-4" aria-hidden="true" />
+              Verification Queue
+            </Link>
+            <Link href="/officer/tenders" className="btn btn-saffron">
+              <Upload className="w-4 h-4" aria-hidden="true" />
+              Create Tender
             </Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] text-left">
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)]">Tender</th>
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)] hidden sm:table-cell">Category</th>
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)]">Reqs</th>
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)]">Bids</th>
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)]">Closing</th>
-                  <th className="px-5 py-3 font-medium text-[var(--foreground-secondary)] hidden md:table-cell">Data</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                {tenders.map((t: any) => {
-                  const daysLeft = Math.ceil((new Date(t.closingDate).getTime() - Date.now()) / 86400000);
-                  return (
-                    <tr key={t.id} className="hover:bg-[var(--surface-2)]">
-                      <td className="px-5 py-3">
-                        <Link href={`/officer/tenders/${t.id}`} className="font-medium text-[var(--foreground)] hover:text-[var(--accent)] block max-w-xs truncate">{t.title}</Link>
-                        <div className="text-xs text-[var(--foreground-tertiary)]">{t.tenderNumber}</div>
-                      </td>
-                      <td className="px-5 py-3 hidden sm:table-cell"><span className="badge badge-blue text-[10px]">{t.category || "—"}</span></td>
-                      <td className="px-5 py-3 text-[var(--foreground-secondary)]">{t._count?.requirements || 0}</td>
-                      <td className="px-5 py-3 text-[var(--foreground-secondary)]">{t._count?.bids || 0}</td>
-                      <td className="px-5 py-3">
-                        <span className={`text-xs font-medium ${daysLeft <= 7 ? "text-[var(--danger)]" : daysLeft <= 14 ? "text-[var(--warning)]" : "text-[var(--foreground-secondary)]"}`}>
-                          {daysLeft > 0 ? `${daysLeft}d` : "Closed"}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 hidden md:table-cell"><span className="badge badge-yellow text-[10px]">{t.dataLabel || "DEMO"}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
         </div>
+      </section>
 
-        {/* Quick Actions + Notifications */}
-        <div className="space-y-6">
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5">
-            <h2 className="font-semibold text-[var(--foreground)] mb-3">Quick Actions</h2>
-            <div className="space-y-2">
-              <Link href="/officer/tenders" className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] rounded-lg p-2 transition-colors">
-                <FileText className="w-4 h-4 text-[var(--accent)]" /> Manage Tenders
-              </Link>
-              <Link href="/officer/verification" className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] rounded-lg p-2 transition-colors">
-                <ClipboardCheck className="w-4 h-4 text-[var(--warning)]" /> Verification Queue
-              </Link>
-              <Link href="/officer/compliance" className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] rounded-lg p-2 transition-colors">
-                <Scale className="w-4 h-4 text-[var(--success)]" /> Compliance Matrix
-              </Link>
-              <Link href="/officer/reports" className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] rounded-lg p-2 transition-colors">
-                <BarChart3 className="w-4 h-4 text-[var(--accent)]" /> Reports
-              </Link>
-              <Link href="/officer/audit" className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] rounded-lg p-2 transition-colors">
-                <Shield className="w-4 h-4 text-[var(--danger)]" /> Audit Trail
-              </Link>
+      {/* ═══════ KPI cards ═══════ */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Key metrics">
+        {stats.map((s) => {
+          const t = toneMap[s.tone];
+          return (
+            <div key={s.label} className="card p-5">
+              <div className="flex items-center gap-4">
+                <span className="w-11 h-11 rounded-[var(--radius)] flex items-center justify-center shrink-0" style={{ background: t.bg }}>
+                  <s.icon className="w-5 h-5" style={{ color: t.fg }} aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[26px] font-extrabold text-[var(--navy-800)] leading-none tabular-nums">{s.value}</div>
+                  <div className="text-[12.5px] font-medium text-[var(--foreground-secondary)] mt-1 truncate">{s.label}</div>
+                </div>
+              </div>
             </div>
+          );
+        })}
+      </section>
+
+      {/* ═══════ Main grid ═══════ */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Tenders table */}
+        <section className="lg:col-span-2 govt-panel">
+          <div className="govt-panel-head">
+            <h2 className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+              Tenders Under Management
+            </h2>
+            <Link
+              href="/officer/tenders"
+              className="text-[12.5px] font-semibold text-[var(--navy-600)] hover:text-[var(--navy-800)] flex items-center gap-1"
+            >
+              Manage all <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            </Link>
           </div>
 
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl">
-            <div className="px-5 py-4 border-b border-[var(--border)]">
-              <h2 className="font-semibold text-[var(--foreground)]">Recent Activity</h2>
+          {tenders.length === 0 ? (
+            <div className="px-5 py-12 text-center">
+              <FileText className="w-8 h-8 text-[var(--gray-300)] mx-auto mb-3" aria-hidden="true" />
+              <p className="text-[14px] font-semibold text-[var(--foreground-secondary)]">No tenders created yet</p>
+              <p className="text-[12.5px] text-[var(--foreground-tertiary)] mt-1">
+                Create your first tender to begin the evaluation workflow.
+              </p>
             </div>
-            <div className="divide-y divide-[var(--border)]">
-              {data.notifications.notifications.slice(0, 5).map((n: any) => (
-                <div key={n.id} className="px-5 py-3">
-                  <div className="text-sm font-medium text-[var(--foreground)]">{n.title}</div>
-                  <div className="text-xs text-[var(--foreground-secondary)] mt-0.5">{n.body}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Tender</th>
+                    <th className="hidden sm:table-cell">Category</th>
+                    <th>Reqs</th>
+                    <th>Bids</th>
+                    <th>Closing</th>
+                    <th className="hidden md:table-cell">Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tenders.slice(0, 8).map((t) => {
+                    const daysLeft = Math.ceil((new Date(t.closingDate).getTime() - Date.now()) / 86400000);
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          <Link
+                            href={`/officer/tenders/${t.id}`}
+                            className="font-semibold text-[var(--foreground)] hover:text-[var(--navy-700)] block max-w-[260px] truncate"
+                          >
+                            {t.title}
+                          </Link>
+                          <div className="text-[11.5px] text-[var(--foreground-tertiary)] mt-0.5 mono">
+                            {t.tenderNumber}
+                          </div>
+                        </td>
+                        <td className="hidden sm:table-cell">
+                          {t.category ? <span className="badge badge-blue">{t.category}</span> : <span className="text-[var(--gray-400)]">—</span>}
+                        </td>
+                        <td className="tabular-nums font-semibold text-[var(--foreground)]">{t._count?.requirements || 0}</td>
+                        <td className="tabular-nums font-semibold text-[var(--foreground)]">{t._count?.bids || 0}</td>
+                        <td>
+                          <span className={`inline-flex items-center gap-1.5 text-[12.5px] font-bold ${
+                            daysLeft <= 0 ? "text-[var(--gray-400)]" : daysLeft <= 7 ? "text-[var(--danger)]" : "text-[var(--foreground-secondary)]"
+                          }`}>
+                            <CalendarDays className="w-3.5 h-3.5" aria-hidden="true" />
+                            {daysLeft > 0 ? `${daysLeft} days` : "Closed"}
+                          </span>
+                        </td>
+                        <td className="hidden md:table-cell">
+                          <span className="badge badge-yellow">{t.dataLabel || "DEMO"}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Quick actions */}
+          <section className="govt-panel">
+            <div className="govt-panel-head"><h2>Quick Actions</h2></div>
+            <div className="p-2">
+              {[
+                { href: "/officer/tenders", icon: FileText, label: "Manage Tenders", tone: "var(--navy-700)" },
+                { href: "/officer/verification", icon: ClipboardCheck, label: "Verification Queue", tone: "var(--amber-600)" },
+                { href: "/officer/compliance", icon: Scale, label: "Compliance Matrix", tone: "var(--green-600)" },
+                { href: "/officer/reports", icon: BarChart3, label: "Reports & Analytics", tone: "var(--navy-600)" },
+                { href: "/officer/audit", icon: Shield, label: "Audit Trail", tone: "var(--red-600)" },
+              ].map((a) => (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-[13.5px] font-medium text-[var(--foreground-secondary)] hover:bg-[var(--navy-50)] hover:text-[var(--navy-800)] transition-colors group"
+                >
+                  <a.icon className="w-[17px] h-[17px] shrink-0" style={{ color: a.tone }} aria-hidden="true" />
+                  {a.label}
+                  <ChevronRight className="w-3.5 h-3.5 ml-auto text-[var(--gray-300)] group-hover:text-[var(--navy-600)] transition-colors" aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Activity */}
+          <section className="govt-panel">
+            <div className="govt-panel-head">
+              <h2 className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+                Recent Activity
+              </h2>
+              {data.notifications.unread > 0 && <span className="badge badge-red">{data.notifications.unread} new</span>}
+            </div>
+            <div className="divide-y divide-[var(--border-light)]">
+              {data.notifications.notifications.slice(0, 5).map((n) => (
+                <div key={n.id} className="px-5 py-3.5">
+                  <div className="text-[13.5px] font-semibold text-[var(--foreground)] leading-snug">{n.title}</div>
+                  <div className="text-[12.5px] text-[var(--foreground-secondary)] mt-0.5 line-clamp-2 leading-relaxed">{n.body}</div>
                 </div>
               ))}
               {data.notifications.notifications.length === 0 && (
-                <div className="px-5 py-4 text-sm text-[var(--foreground-tertiary)] text-center">No recent activity</div>
+                <p className="px-5 py-8 text-center text-[13px] text-[var(--foreground-tertiary)]">No recent activity</p>
               )}
             </div>
-          </div>
+          </section>
+        </div>
+      </div>
 
-          {/* Data Source Notice */}
-          <div className="bg-[var(--warning-light)] border border-[var(--warning)]/30 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-[var(--warning)] text-xs font-semibold mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              Demo Mode Active
-            </div>
-            <p className="text-xs text-[var(--warning)]">
-              All tender and verification data is simulated. Connect real APIs in Admin → Settings for live data.
+      {/* ═══════ Demo notice + readiness ═══════ */}
+      <div className="grid md:grid-cols-2 gap-5">
+        <section className="notice notice-warning">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+          <div>
+            <p className="font-bold text-[13.5px] mb-0.5">Demonstration data active</p>
+            <p className="text-[12.5px] leading-relaxed">
+              Tender and verification data is simulated for this prototype.
+              Connect live APIs from the Control Center to evaluate real submissions.
             </p>
           </div>
-        </div>
+        </section>
+
+        <section className="card p-5 flex items-start gap-4">
+          <span className="w-11 h-11 rounded-[var(--radius)] bg-[var(--navy-100)] flex items-center justify-center shrink-0">
+            <TrendingUp className="w-5 h-5 text-[var(--navy-700)]" aria-hidden="true" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14.5px] font-bold text-[var(--navy-800)] flex items-center gap-2">
+              <BadgeCheck className="w-4 h-4 text-[var(--green-600)]" aria-hidden="true" />
+              Evaluation readiness
+            </p>
+            <p className="text-[13px] text-[var(--foreground-secondary)] mt-1 leading-relaxed">
+              {totalBids > 0
+                ? `${totalBids} bid${totalBids === 1 ? "" : "s"} awaiting evaluation across ${tenders.length} tender${tenders.length === 1 ? "" : "s"}.`
+                : "No bids have been submitted yet. Publish a tender to begin receiving submissions."}
+            </p>
+            <Link href="/officer/verification" className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[var(--navy-600)] hover:text-[var(--navy-800)] mt-2.5">
+              Open verification queue <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

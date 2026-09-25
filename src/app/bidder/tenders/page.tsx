@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Filter, Clock, MapPin, Tag, ArrowRight, Bookmark, BookmarkCheck, X } from "lucide-react";
+import { Search, Filter, Clock, MapPin, Tag, ArrowRight, Bookmark, BookmarkCheck, X, Sparkles } from "lucide-react";
 
 export default function BidderTendersPage() {
   const [query, setQuery] = useState("");
@@ -64,9 +64,9 @@ export default function BidderTendersPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setNlMode(!nlMode)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${nlMode ? "bg-[var(--accent)]/12 border-blue-300 text-[#64b5ff]" : "border-[var(--border)] text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)]"}`}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${nlMode ? "bg-[var(--navy-100)] border-[var(--navy-500)] text-[var(--navy-700)]" : "border-[var(--border)] text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)]"}`}
             >
-              🤖 AI
+              <Sparkles className="w-3.5 h-3.5" /> AI
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -96,7 +96,7 @@ export default function BidderTendersPage() {
 
         {/* AI Interpretation */}
         {interpretation && nlMode && (
-          <div className="mt-3 bg-[var(--accent)]/12 rounded-lg px-4 py-2 text-xs text-[#64b5ff]">
+          <div className="mt-3 bg-[var(--navy-50)] border border-[var(--navy-200)] rounded-[var(--radius)] px-4 py-2.5 text-xs text-[var(--navy-700)]">
             <span className="font-semibold">AI interpreted:</span>{" "}
             {interpretation.state && <span>State: {interpretation.state} · </span>}
             {interpretation.category && <span>Category: {interpretation.category} · </span>}

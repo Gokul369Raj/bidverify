@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Settings, Shield, Save, Loader2, CheckCircle2 } from "lucide-react";
 
-const inp = "w-full px-3.5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[14px] text-white placeholder:text-[#86868b] focus:border-[#2997ff] focus:outline-none transition-colors";
-const lbl = "block text-[12px] font-medium text-[#a1a1a6] mb-1.5";
+const inp = "w-full px-3.5 py-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-xl text-[14px] text-[var(--foreground)] placeholder:text-[var(--foreground-tertiary)] focus:border-[var(--navy-600)] focus:outline-none transition-colors";
+const lbl = "block text-[12px] font-medium text-[var(--foreground-tertiary)] mb-1.5";
 
 export default function OfficerAdminPage() {
   const [aiSettings, setAiSettings] = useState<any>(null);
@@ -94,17 +94,17 @@ export default function OfficerAdminPage() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="text-sm text-[#a1a1a6] animate-pulse">Loading settings...</div></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="text-sm text-[var(--foreground-tertiary)] animate-pulse">Loading settings...</div></div>;
 
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Admin Settings</h1>
-        <p className="text-sm text-[#a1a1a6] mt-1">Configure AI providers, verification integrations, and compliance rules.</p>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">Admin Settings</h1>
+        <p className="text-sm text-[var(--foreground-tertiary)] mt-1">Configure AI providers, verification integrations, and compliance rules.</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#161617] border border-white/10 rounded-xl p-1">
+      <div className="flex gap-1 bg-[var(--surface)] border border-[var(--border)] rounded-xl p-1">
         {[
           { id: "tenders" as const, label: `Tenders (${tenders.length})` },
           { id: "users" as const, label: `Users & Organizations (${users.length})` },
@@ -112,7 +112,7 @@ export default function OfficerAdminPage() {
           { id: "rules" as const, label: `Rules (${rules.length})` },
           { id: "integrations" as const, label: "Integrations" },
         ].map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.id ? "bg-[#2997ff]/12 text-[#64b5ff]" : "text-[#a1a1a6] hover:bg-white/5"}`}>
+          <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.id ? "bg-[var(--navy-100)] text-[var(--navy-600)]" : "text-[var(--foreground-tertiary)] hover:bg-[var(--navy-50)]"}`}>
             {t.label}
           </button>
         ))}
@@ -120,14 +120,14 @@ export default function OfficerAdminPage() {
 
       {/* Flash notice */}
       {notice && (
-        <div className="bg-[#30d158]/10 border border-[#30d158]/30 rounded-xl px-4 py-3 text-sm text-[#30d158]">{notice}</div>
+        <div className="bg-[var(--green-100)] border border-[#C6E4C1] rounded-xl px-4 py-3 text-sm text-[var(--green-600)]">{notice}</div>
       )}
 
       {/* ═══ Tender Management ═══ */}
       {tab === "tenders" && (
         <div className="space-y-3">
-          <p className="text-xs text-[#86868b]">Edits and deletions propagate to every user instantly — no refresh needed.</p>
-          {tenders.length === 0 && <div className="card-flat p-8 text-center text-sm text-[#86868b]">No tenders yet.</div>}
+          <p className="text-xs text-[var(--foreground-tertiary)]">Edits and deletions propagate to every user instantly — no refresh needed.</p>
+          {tenders.length === 0 && <div className="card-flat p-8 text-center text-sm text-[var(--foreground-tertiary)]">No tenders yet.</div>}
           {tenders.map((t: any) => (
             <div key={t.id} className="card-flat p-5">
               {editing?.id === t.id ? (
@@ -160,25 +160,25 @@ export default function OfficerAdminPage() {
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-mono text-[11px] text-[#64b5ff] bg-[#2997ff]/10 px-2 py-0.5 rounded-md">{t.tenderNumber}</span>
+                      <span className="font-mono text-[11px] text-[var(--navy-600)] bg-[var(--navy-100)] px-2 py-0.5 rounded-md">{t.tenderNumber}</span>
                       <span className={`badge text-[10px] ${t.status === "ACTIVE" ? "badge-green" : t.status === "CLOSED" ? "badge-gray" : "badge-red"}`}>{t.status}</span>
                     </div>
-                    <div className="text-sm font-medium text-white truncate max-w-xl">{t.title}</div>
-                    <div className="text-xs text-[#86868b] mt-1">
+                    <div className="text-sm font-medium text-[var(--foreground)] truncate max-w-xl">{t.title}</div>
+                    <div className="text-xs text-[var(--foreground-tertiary)] mt-1">
                       {t.buyerOrganization} · {t._count?.requirements ?? 0} reqs · {t._count?.bids ?? 0} bids · closes {new Date(t.closingDate).toLocaleDateString("en-IN")}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => { setEditing(t); setEditForm({ ...t, estimatedValueLakh: t.estimatedValueLakh != null ? String(t.estimatedValueLakh) : "" }); }}
-                      className="text-sm font-medium text-white bg-white/8 hover:bg-white/15 px-4 py-2 rounded-full transition-colors cursor-pointer"
+                      className="text-sm font-medium text-[var(--foreground)] bg-[var(--surface-3)] hover:bg-[var(--gray-200)] px-4 py-2 rounded-full transition-colors cursor-pointer"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteTender(t)}
                       disabled={busyId === t.id}
-                      className="text-sm font-medium text-[#ff6961] bg-[#ff453a]/10 hover:bg-[#ff453a]/25 px-4 py-2 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
+                      className="text-sm font-medium text-[var(--danger)] bg-[var(--red-100)] hover:bg-[#F5CFCA] px-4 py-2 rounded-full transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       {busyId === t.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete"}
                     </button>
@@ -193,16 +193,16 @@ export default function OfficerAdminPage() {
       {/* ═══ Users & Organizations ═══ */}
       {tab === "users" && (
         <div className="space-y-3">
-          <p className="text-xs text-[#86868b]">Every registered bidder with their full organization details as submitted.</p>
-          {users.filter((u: any) => u.organization).length === 0 && <div className="card-flat p-8 text-center text-sm text-[#86868b]">No organizations yet.</div>}
+          <p className="text-xs text-[var(--foreground-tertiary)]">Every registered bidder with their full organization details as submitted.</p>
+          {users.filter((u: any) => u.organization).length === 0 && <div className="card-flat p-8 text-center text-sm text-[var(--foreground-tertiary)]">No organizations yet.</div>}
           {users.filter((u: any) => u.organization).map((u: any) => {
             const o = u.organization;
             return (
               <details key={u.id} className="card-flat overflow-hidden group">
-                <summary className="p-5 cursor-pointer flex items-center justify-between gap-4 hover:bg-white/[0.03] select-none">
+                <summary className="p-5 cursor-pointer flex items-center justify-between gap-4 hover:bg-[var(--navy-50)] select-none">
                   <div className="min-w-0">
-                    <span className="text-sm font-medium text-white">{o.legalName}</span>
-                    <span className="text-xs text-[#86868b] ml-3">{o.state || "—"}{o.city ? `, ${o.city}` : ""}</span>
+                    <span className="text-sm font-medium text-[var(--foreground)]">{o.legalName}</span>
+                    <span className="text-xs text-[var(--foreground-tertiary)] ml-3">{o.state || "—"}{o.city ? `, ${o.city}` : ""}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                     {o.pan && <span className="badge badge-blue !text-[10px]">PAN</span>}
@@ -211,7 +211,7 @@ export default function OfficerAdminPage() {
                     {o.isStartup && <span className="badge badge-gray !text-[10px]">Startup</span>}
                   </div>
                 </summary>
-                <div className="border-t border-white/10 p-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                <div className="border-t border-[var(--border)] p-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                   {[
                     ["Legal Name", o.legalName], ["Trade Name", o.tradeName], ["PAN", o.pan],
                     ["GSTIN", o.gstin], ["Udyam", o.udyamNumber], ["CIN", o.cin],
@@ -220,12 +220,12 @@ export default function OfficerAdminPage() {
                     ["Phone", o.phone], ["Turnover (₹L)", o.annualTurnoverLakh],
                     ["Incorporated", o.incorporationDate ? new Date(o.incorporationDate).toLocaleDateString("en-IN") : null],
                   ].map(([l, v]) => v ? (
-                    <div key={l as string} className="bg-white/[0.03] rounded-lg p-3">
-                      <div className="text-[11px] text-[#86868b]">{l}</div>
-                      <div className="text-[13px] text-white mt-0.5 break-words">{String(v)}</div>
+                    <div key={l as string} className="bg-[var(--background)] rounded-lg p-3">
+                      <div className="text-[11px] text-[var(--foreground-tertiary)]">{l}</div>
+                      <div className="text-[13px] text-[var(--foreground)] mt-0.5 break-words">{String(v)}</div>
                     </div>
                   ) : null)}
-                  <div className="sm:col-span-2 lg:col-span-3 pt-1 text-xs text-[#86868b]">
+                  <div className="sm:col-span-2 lg:col-span-3 pt-1 text-xs text-[var(--foreground-tertiary)]">
                     Account owner: {u.name} · {u.email} · sign-in via {u.authProvider ?? "EMAIL"}
                   </div>
                 </div>
@@ -237,14 +237,14 @@ export default function OfficerAdminPage() {
 
       {/* AI Settings */}
       {tab === "ai" && aiSettings && (
-        <div className="bg-[#161617] border border-white/10 rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold text-white flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#2997ff]" /> AI Provider Configuration
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold text-[var(--foreground)] flex items-center gap-2">
+            <Settings className="w-5 h-5 text-[var(--navy-600)]" /> AI Provider Configuration
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#d6d6d7] mb-1">Primary Provider</label>
-              <select value={aiSettings.provider} onChange={(e) => setAiSettings((p: any) => ({ ...p, provider: e.target.value }))} className="w-full px-3 py-2 border border-white/12 rounded-lg text-sm">
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">Primary Provider</label>
+              <select value={aiSettings.provider} onChange={(e) => setAiSettings((p: any) => ({ ...p, provider: e.target.value }))} className="w-full px-3 py-2 border border-[var(--border)] rounded-lg text-sm">
                 <option value="auto">Auto (first configured)</option>
                 <option value="gemini">Gemini (Google)</option>
                 <option value="openai">OpenAI</option>
@@ -252,21 +252,21 @@ export default function OfficerAdminPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#d6d6d7] mb-1">Temperature</label>
-              <input type="number" step="0.1" min="0" max="1" value={aiSettings.temperature ?? 0.2} onChange={(e) => setAiSettings((p: any) => ({ ...p, temperature: parseFloat(e.target.value) }))} className="w-full px-3 py-2 border border-white/12 rounded-lg text-sm" />
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-1">Temperature</label>
+              <input type="number" step="0.1" min="0" max="1" value={aiSettings.temperature ?? 0.2} onChange={(e) => setAiSettings((p: any) => ({ ...p, temperature: parseFloat(e.target.value) }))} className="w-full px-3 py-2 border border-[var(--border)] rounded-lg text-sm" />
             </div>
             <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-sm text-[#d6d6d7]">
+              <label className="flex items-center gap-2 text-sm text-[var(--foreground)]">
                 <input type="checkbox" checked={aiSettings.visionEnabled} onChange={(e) => setAiSettings((p: any) => ({ ...p, visionEnabled: e.target.checked }))} className="rounded" />
                 Vision Enabled
               </label>
-              <label className="flex items-center gap-2 text-sm text-[#d6d6d7]">
+              <label className="flex items-center gap-2 text-sm text-[var(--foreground)]">
                 <input type="checkbox" checked={aiSettings.documentAnalysisEnabled} onChange={(e) => setAiSettings((p: any) => ({ ...p, documentAnalysisEnabled: e.target.checked }))} className="rounded" />
                 Document Analysis
               </label>
             </div>
           </div>
-          <button onClick={saveAiSettings} disabled={saving} className="bg-blue-700 text-white font-medium px-4 py-2 rounded-lg hover:bg-[#64b5ff] text-sm flex items-center gap-2 disabled:opacity-50">
+          <button onClick={saveAiSettings} disabled={saving} className="bg-[var(--navy-800)] text-white font-medium px-4 py-2 rounded-lg hover:bg-[var(--navy-600)] text-sm flex items-center gap-2 disabled:opacity-50">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {saved ? "Saved!" : "Save Settings"}
           </button>
@@ -275,27 +275,27 @@ export default function OfficerAdminPage() {
 
       {/* Rules */}
       {tab === "rules" && (
-        <div className="bg-[#161617] border border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/[0.03] text-left">
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Code</th>
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Name</th>
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Type</th>
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Version</th>
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Weight</th>
-                  <th className="px-5 py-3 font-medium text-[#a1a1a6]">Status</th>
+                <tr className="border-b border-[var(--border)] bg-[var(--background)] text-left">
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Code</th>
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Name</th>
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Type</th>
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Version</th>
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Weight</th>
+                  <th className="px-5 py-3 font-medium text-[var(--foreground-tertiary)]">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-[var(--border-light)]">
                 {rules.map((r) => (
-                  <tr key={r.id} className="hover:bg-white/5">
-                    <td className="px-5 py-3 font-mono text-xs text-[#c7c7cc]">{r.code}</td>
-                    <td className="px-5 py-3 text-white">{r.name}</td>
+                  <tr key={r.id} className="hover:bg-[var(--navy-50)]">
+                    <td className="px-5 py-3 font-mono text-xs text-[var(--foreground-secondary)]">{r.code}</td>
+                    <td className="px-5 py-3 text-[var(--foreground)]">{r.name}</td>
                     <td className="px-5 py-3"><span className="badge badge-blue text-[10px]">{r.requirementType}</span></td>
-                    <td className="px-5 py-3 text-[#c7c7cc]">v{r.version}</td>
-                    <td className="px-5 py-3 text-[#c7c7cc]">{r.weight}</td>
+                    <td className="px-5 py-3 text-[var(--foreground-secondary)]">v{r.version}</td>
+                    <td className="px-5 py-3 text-[var(--foreground-secondary)]">{r.weight}</td>
                     <td className="px-5 py-3"><span className={`badge text-[10px] ${r.active ? "badge-green" : "badge-gray"}`}>{r.active ? "Active" : "Inactive"}</span></td>
                   </tr>
                 ))}
@@ -316,10 +316,10 @@ export default function OfficerAdminPage() {
             { name: "Google OAuth", env: "GOOGLE_CLIENT_ID", status: process.env.GOOGLE_CLIENT_ID ? "Configured" : "Not configured" },
             { name: "GeM Integration", env: "GEM_API_KEY", status: process.env.GEM_API_KEY ? "Configured" : "Not configured" },
           ].map((i) => (
-            <div key={i.name} className="bg-[#161617] border border-white/10 rounded-xl p-4 flex items-center justify-between">
+            <div key={i.name} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium text-white">{i.name}</div>
-                <div className="text-xs text-[#a1a1a6]">Environment variable: {i.env}</div>
+                <div className="text-sm font-medium text-[var(--foreground)]">{i.name}</div>
+                <div className="text-xs text-[var(--foreground-tertiary)]">Environment variable: {i.env}</div>
               </div>
               <span className={`badge text-[10px] ${i.status === "Configured" ? "badge-green" : "badge-gray"}`}>{i.status}</span>
             </div>

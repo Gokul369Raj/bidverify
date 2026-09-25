@@ -1,8 +1,13 @@
 "use client";
+
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Shield, Mail, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Emblem } from "@/components/Emblem";
+import AuthPanel from "@/components/AuthPanel";
+import {
+  Mail, Loader2, CircleCheck, ArrowLeft, AlertCircle, KeyRound, Lock, Info,
+} from "lucide-react";
 
 function ForgotPasswordForm() {
   const searchParams = useSearchParams();
@@ -16,10 +21,21 @@ function ForgotPasswordForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       const data = await res.json();
-      setMessage({ type: "success", text: data.ok ? "If an account exists with this email, a reset link has been sent. In demo mode, check the URL for the token." : data.error });
-    } catch { setMessage({ type: "error", text: "Failed to send reset email" }); }
+      setMessage({
+        type: data.ok ? "success" : "error",
+        text: data.ok
+          ? "If an account exists with this email, a password reset link has been sent."
+          : data.error,
+      });
+    } catch {
+      setMessage({ type: "error", text: "Failed to send reset email. Please try again." });
+    }
     setLoading(false);
   }
 
@@ -27,64 +43,160 @@ function ForgotPasswordForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: resetToken, newPassword }) });
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: resetToken, newPassword }),
+      });
       const data = await res.json();
-      setMessage(data.ok ? { type: "success", text: "Password reset successful! Redirecting to login..." } : { type: "error", text: data.error });
-      if (data.ok) setTimeout(() => window.location.href = "/login", 2000);
-    } catch { setMessage({ type: "error", text: "Failed to reset password" }); }
+      setMessage(
+        data.ok
+          ? { type: "success", text: "Password reset successful. Redirecting to sign-in…" }
+          : { type: "error", text: data.error }
+      );
+      if (data.ok) setTimeout(() => { window.location.href = "/login"; }, 1800);
+    } catch {
+      setMessage({ type: "error", text: "Failed to reset password. Please try again." });
+    }
     setLoading(false);
   }
 
+  const resetting = Boolean(resetToken);
+
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col justify-center py-12 px-4">
-      <div className="max-w-md mx-auto w-full">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-[var(--accent)] rounded-xl flex items-center justify-center"><Shield className="w-7 h-7 text-white" /></div>
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{resetToken ? "Reset Password" : "Forgot Password"}</h1>
-          <p className="text-sm text-[var(--foreground-secondary)] mt-2"><Link href="/login" className="text-[var(--accent)] hover:text-[var(--accent-hover)] flex items-center justify-center gap-1"><ArrowLeft className="w-3.5 h-3.5" /> Back to login</Link></p>
+    <div className="min-h-screen flex bg-[var(--surface-2)]">
+      <AuthPanel
+        title="Regain access to your procurement workspace."
+        subtitle="Reset your BidGuard AI password securely. All credential changes are recorded in the platform audit trail."
+        points={[
+          "Reset links expire automatically for your security",
+          "Every credential change is written to the audit log",
+          "Multi-role access control across bidder and officer accounts",
+        ]}
+      />
+
+      <div className="flex-1 flex flex-col min-h-screen">
+        <div className="tricolor-bar lg:hidden" />
+
+        <div className="lg:hidden flex items-center justify-between gap-3 px-5 py-3.5 bg-white border-b border-[var(--border)]">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Emblem height={34} />
+            <span className="text-[15px] font-extrabold text-[var(--navy-800)] tracking-tight">
+              BidGuard<span className="text-[var(--saffron-500)]"> AI</span>
+            </span>
+          </Link>
+          <Link href="/login" className="text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)]">
+            Sign in
+          </Link>
         </div>
 
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 sm:p-8 shadow-sm">
-          {message && (
-            <div className={`mb-4 rounded-lg px-4 py-3 text-sm flex items-center gap-2 ${message.type === "success" ? "bg-[var(--success-light)] border border-[var(--success)] text-[var(--success)]" : "bg-[var(--danger-light)] border border-[var(--danger)] text-[var(--danger)]"}`}>
-              {message.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : null}
-              {message.text}
-            </div>
-          )}
+        <div className="flex-1 flex items-center justify-center px-5 py-10 sm:py-14">
+          <div className="w-full max-w-[420px]">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] transition-colors mb-7"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+              Back to sign-in
+            </Link>
 
-          {!resetToken ? (
-            <form onSubmit={handleRequestReset} className="space-y-4">
-              <p className="text-sm text-[var(--foreground-secondary)]">Enter your registered email address and we will send you a password reset link.</p>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-tertiary)]" />
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-field !pl-10" placeholder="you@example.com" />
+            <div className="mb-7">
+              <span className="badge badge-navy mb-3">
+                <KeyRound className="w-3 h-3" aria-hidden="true" />
+                Account Recovery
+              </span>
+              <h1 className="text-[27px] font-extrabold text-[var(--navy-800)] tracking-tight leading-tight">
+                {resetting ? "Set a new password" : "Forgot your password?"}
+              </h1>
+              <p className="text-[14px] text-[var(--foreground-secondary)] mt-2">
+                {resetting
+                  ? "Choose a strong new password for your account."
+                  : "Enter your registered email and we will send you a secure reset link."}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow)] p-7">
+              {message && (
+                <div
+                  className={`notice mb-5 ${message.type === "success" ? "notice-success" : "notice-danger"}`}
+                  role="status"
+                >
+                  {message.type === "success" ? (
+                    <CircleCheck className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                  )}
+                  <span>{message.text}</span>
                 </div>
-              </div>
-              <button type="submit" disabled={loading} className="w-full bg-[var(--accent)] text-white font-medium py-2.5 rounded-lg hover:bg-[var(--accent-hover)] text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Send Reset Link
-              </button>
-              <div className="bg-[var(--warning-light)] border border-[var(--warning)] rounded-lg p-3 text-xs text-[var(--warning)]">
-                Demo mode: In production, this sends a real email. For demo, check the server logs for the reset token.
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleReset} className="space-y-4">
-              <p className="text-sm text-[var(--foreground-secondary)]">Enter your new password below.</p>
-              <div>
-                <label className="block text-sm font-medium mb-1">New Password (min 8 chars)</label>
-                <input type="password" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="input-field" placeholder="New password" />
-              </div>
-              <button type="submit" disabled={loading} className="w-full bg-[var(--accent)] text-white font-medium py-2.5 rounded-lg hover:bg-[var(--accent-hover)] text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Reset Password
-              </button>
-            </form>
-          )}
+              )}
+
+              {!resetting ? (
+                <form onSubmit={handleRequestReset} className="space-y-5">
+                  <div>
+                    <label htmlFor="fp-email" className="field-label">Registered Email ID</label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-[var(--foreground-tertiary)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                      <input
+                        id="fp-email"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input-field !pl-10 !py-3"
+                        placeholder="you@organisation.com"
+                      />
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={loading} className="btn btn-navy w-full btn-lg">
+                    {loading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Sending link…</>
+                    ) : (
+                      "Send Reset Link"
+                    )}
+                  </button>
+
+                  <div className="notice notice-info">
+                    <Info className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>
+                      Demonstration mode — no email is actually sent. The reset token is
+                      written to the server console instead.
+                    </span>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleReset} className="space-y-5">
+                  <div>
+                    <label htmlFor="fp-new" className="field-label">New Password</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-[var(--foreground-tertiary)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                      <input
+                        id="fp-new"
+                        type="password"
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="input-field !pl-10 !py-3"
+                        placeholder="Minimum 8 characters"
+                      />
+                    </div>
+                    <p className="field-hint">Use at least 8 characters with a mix of letters and numbers.</p>
+                  </div>
+
+                  <button type="submit" disabled={loading} className="btn btn-navy w-full btn-lg">
+                    {loading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Resetting…</>
+                    ) : (
+                      "Reset Password"
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -93,7 +205,13 @@ function ForgotPasswordForm() {
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[var(--background)] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[var(--surface-2)] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--navy-700)]" aria-hidden="true" />
+        </div>
+      }
+    >
       <ForgotPasswordForm />
     </Suspense>
   );

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
-import { Logo } from "@/components/Logo";
+import GovtFooter from "@/components/GovtFooter";
 import { ArrowLeft, CheckCircle, CircleDashed, ShieldAlert } from "lucide-react";
 
 const PORTALS = [
@@ -122,12 +122,7 @@ export default function CompliancePage() {
         </div>
       </section>
 
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 py-8 flex items-center justify-between">
-          <Logo size="small" />
-          <div className="caption">© 2026 BIDGUARD AI</div>
-        </div>
-      </footer>
+      <GovtFooter />
     </div>
   );
 }

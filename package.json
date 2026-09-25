@@ -8,7 +8,7 @@
     "start": "next start -p 3000",
     "lint": "eslint",
     "test": "vitest run",
-    "predev": "lsof -ti :3000 | xargs kill 2>/dev/null || exit 0",
+    "predev": "lsof -ti :3000 | xargs kill -9 2>/dev/null; exit 0",
     "postinstall": "prisma generate"
   },
   "dependencies": {

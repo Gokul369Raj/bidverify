@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import AdminGate from "@/components/AdminGate";
+import { Emblem } from "@/components/Emblem";
 import Link from "next/link";
 import {
   Shield, Users, FileText, BarChart3, Activity, Search, ChevronDown,
   ChevronUp, Eye, EyeOff, Phone, Mail, Clock, TrendingUp, CheckCircle2,
   AlertCircle, Settings, Loader2, Building2, IndianRupee, Plus, Zap,
-  Play, Scale, ClipboardList, BadgeCheck, Landmark, RefreshCw, Check,
+  Play, Scale, ClipboardList, BadgeCheck, RefreshCw, Check,
   X, FileCheck, AlertTriangle, BarChart, ShieldCheck, Database, Cpu,
 } from "lucide-react";
 
@@ -46,9 +47,13 @@ interface RuleData {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  SUPER_ADMIN: "bg-red-900/40 text-red-400 border border-red-800/50", PROCUREMENT_OFFICER: "bg-blue-900/40 text-blue-400 border border-blue-800/50",
-  BID_EVALUATION_OFFICER: "bg-indigo-900/40 text-indigo-400 border border-indigo-800/50", COMPLIANCE_REVIEWER: "bg-purple-900/40 text-purple-400 border border-purple-800/50",
-  AUDITOR: "bg-amber-900/40 text-amber-400 border border-amber-800/50", SYSTEM_ADMIN: "bg-red-900/40 text-red-400 border border-red-800/50", BIDDER: "bg-green-900/40 text-green-400 border border-green-800/50",
+  SUPER_ADMIN: "bg-[var(--red-100)] text-[var(--red-600)] border border-[#F5CFCA]",
+  PROCUREMENT_OFFICER: "bg-[var(--navy-100)] text-[var(--navy-700)] border border-[#CBD9EC]",
+  BID_EVALUATION_OFFICER: "bg-[var(--purple-100)] text-[var(--purple-600)] border border-[#DCD0F3]",
+  COMPLIANCE_REVIEWER: "bg-[var(--saffron-100)] text-[var(--saffron-700)] border border-[#FBD9C4]",
+  AUDITOR: "bg-[var(--amber-100)] text-[var(--amber-700)] border border-[#F5DDB8]",
+  SYSTEM_ADMIN: "bg-[var(--red-100)] text-[var(--red-600)] border border-[#F5CFCA]",
+  BIDDER: "bg-[var(--green-100)] text-[var(--green-700)] border border-[#C6E4C1]",
 };
 
 type Tab = "tenders" | "bids" | "verification" | "compliance" | "users" | "rules" | "audit" | "settings" | "stats" | "applications" | "documents";
@@ -286,15 +291,33 @@ function AdminContent() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <div className="bg-[var(--accent)] text-white">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center"><Landmark className="w-5 h-5 text-white" /></div>
-            <div><h1 className="text-base font-bold text-white">BIDGUARD AI — Admin Control Center</h1><p className="text-[10px] text-white/70">Government Procurement Control Center</p></div>
+      <div className="tricolor-bar" />
+      <div className="bg-[var(--navy-800)] text-white">
+        <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <span className="shrink-0"><Emblem height={40} variant="light" /></span>
+            <div className="min-w-0 border-l border-white/20 pl-3.5">
+              <h1 className="text-[16px] font-extrabold text-white leading-tight truncate">
+                BidGuard<span className="text-[var(--saffron-400)]"> AI</span> — Admin Control Center
+              </h1>
+              <p className="text-[11px] text-white/60 leading-tight mt-0.5">
+                Government Procurement Control Center
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={loadAll} className="text-xs bg-white/20 text-white px-3 py-1.5 rounded-lg hover:bg-white/30 flex items-center gap-1 font-medium"><RefreshCw className="w-3 h-3" /> Refresh</button>
-            <Link href="/" className="text-xs bg-white/20 text-white px-3 py-1.5 rounded-lg hover:bg-white/30">← Back to Site</Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={loadAll}
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-white/12 text-white px-3 py-2 rounded-[var(--radius)] hover:bg-white/22 transition-colors cursor-pointer border border-white/15"
+            >
+              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Refresh
+            </button>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-white/12 text-white px-3 py-2 rounded-[var(--radius)] hover:bg-white/22 transition-colors border border-white/15"
+            >
+              ← Back to Site
+            </Link>
           </div>
         </div>
       </div>

@@ -1,37 +1,69 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ChatBot from "@/components/ChatBot";
-import { Logo } from "@/components/Logo";
+import { Emblem } from "@/components/Emblem";
 import { useSession } from "@/lib/useSession";
 import { signOut } from "@/lib/session";
 import {
   Shield, LayoutDashboard, Search, FileText, Upload, Bell, User, Settings,
   LogOut, ChevronDown, Building2, ClipboardCheck, Scale, BarChart3,
-  ScrollText, Menu, X,
+  ScrollText, Menu, X, Home, ChevronRight,
 } from "lucide-react";
 
-interface NavItem { label: string; href: string; icon: React.ElementType; badge?: number; }
+interface NavItem { label: string; href: string; icon: React.ElementType; }
+interface NavGroup { title: string; items: NavItem[]; }
 
-const BIDDER_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/bidder", icon: LayoutDashboard },
-  { label: "Search Tenders", href: "/bidder/tenders", icon: Search },
-  { label: "My Applications", href: "/bidder/applications", icon: FileText },
-  { label: "Document Vault", href: "/bidder/documents", icon: Upload },
-  { label: "Compliance", href: "/bidder/compliance", icon: ClipboardCheck },
-  { label: "Notifications", href: "/bidder/notifications", icon: Bell },
-  { label: "Organization", href: "/bidder/profile", icon: Building2 },
+const BIDDER_NAV: NavGroup[] = [
+  {
+    title: "Overview",
+    items: [
+      { label: "Dashboard", href: "/bidder", icon: LayoutDashboard },
+      { label: "Search Tenders", href: "/bidder/tenders", icon: Search },
+      { label: "My Applications", href: "/bidder/applications", icon: FileText },
+    ],
+  },
+  {
+    title: "Compliance",
+    items: [
+      { label: "Document Vault", href: "/bidder/documents", icon: Upload },
+      { label: "Compliance Status", href: "/bidder/compliance", icon: ClipboardCheck },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      { label: "Organization", href: "/bidder/profile", icon: Building2 },
+      { label: "Notifications", href: "/bidder/notifications", icon: Bell },
+    ],
+  },
 ];
 
-const OFFICER_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/officer", icon: LayoutDashboard },
-  { label: "Tenders", href: "/officer/tenders", icon: FileText },
-  { label: "Verification Queue", href: "/officer/verification", icon: ClipboardCheck },
-  { label: "Compliance", href: "/officer/compliance", icon: Scale },
-  { label: "Reports", href: "/officer/reports", icon: BarChart3 },
-  { label: "Audit Trail", href: "/officer/audit", icon: ScrollText },
-  { label: "Admin", href: "/officer/admin", icon: Settings },
-  { label: "Notifications", href: "/officer/notifications", icon: Bell },
+const OFFICER_NAV: NavGroup[] = [
+  {
+    title: "Overview",
+    items: [
+      { label: "Dashboard", href: "/officer", icon: LayoutDashboard },
+      { label: "Tenders", href: "/officer/tenders", icon: FileText },
+      { label: "Verification Queue", href: "/officer/verification", icon: ClipboardCheck },
+    ],
+  },
+  {
+    title: "Analysis",
+    items: [
+      { label: "Compliance Matrix", href: "/officer/compliance", icon: Scale },
+      { label: "Reports", href: "/officer/reports", icon: BarChart3 },
+      { label: "Audit Trail", href: "/officer/audit", icon: ScrollText },
+    ],
+  },
+  {
+    title: "Administration",
+    items: [
+      { label: "Admin Panel", href: "/officer/admin", icon: Settings },
+      { label: "Notifications", href: "/officer/notifications", icon: Bell },
+    ],
+  },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -66,114 +98,198 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center mx-auto mb-3 animate-pulse">
-            <Shield className="w-5 h-5 text-white" />
+          <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-[var(--navy-800)] flex items-center justify-center mx-auto mb-3 animate-pulse">
+            <Shield className="w-6 h-6 text-white" aria-hidden="true" />
           </div>
-          <p className="caption">Loading...</p>
+          <p className="text-[13px] font-medium text-[var(--foreground-secondary)]">
+            Loading your dashboard…
+          </p>
         </div>
       </div>
     );
   }
 
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
     if (href === "/bidder" || href === "/officer") return pathname === href || pathname === href + "/";
     return pathname.startsWith(href);
   };
 
+  const currentLabel =
+    nav.flatMap((g) => g.items).find((i) => isActive(i.href))?.label ?? "Dashboard";
+
   return (
     <div className="min-h-screen bg-[var(--background)] flex">
-      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {/* Mobile scrim */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[var(--navy-950)]/50 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[var(--surface)] border-r border-[var(--border)] transform transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto flex flex-col ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="h-14 flex items-center gap-3 px-5 border-b border-[var(--border-light)] shrink-0">
-          <Logo size="small" />
-          <span className="text-[11px] font-medium text-[var(--accent)] truncate">{ROLE_LABELS[user.role] || user.role}</span>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--foreground-tertiary)] hover:text-[var(--foreground)]">
+      {/* ── Sidebar ── */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-[264px] bg-[var(--navy-900)] flex flex-col transform transition-transform duration-200 lg:translate-x-0 lg:static lg:z-auto ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="tricolor-bar shrink-0" />
+
+        {/* Brand */}
+        <div className="h-[74px] flex items-center gap-3 px-4 border-b border-white/10 shrink-0">
+          <Emblem height={40} variant="light" priority />
+          <div className="min-w-0 flex-1">
+            <div className="text-[15px] font-extrabold text-white leading-tight tracking-tight truncate">
+              BidGuard<span className="text-[var(--saffron-400)]"> AI</span>
+            </div>
+            <div className="text-[10px] text-white/50 leading-tight truncate">
+              {ROLE_LABELS[user.role] || user.role}
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-white/60 hover:text-white p-1 cursor-pointer"
+            aria-label="Close menu"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <nav className="p-3 space-y-0.5 flex-1 overflow-y-auto">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive(item.href)
-                  ? "bg-[var(--accent-light)] text-[var(--accent)]"
-                  : "text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
-              }`}
-            >
-              <item.icon className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-              <span className="truncate">{item.label}</span>
-            </Link>
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Dashboard">
+          {nav.map((group) => (
+            <div key={group.title} className="mb-5 last:mb-0">
+              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                {group.title}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setSidebarOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-[13.5px] font-medium transition-colors ${
+                        active
+                          ? "bg-white/[0.13] text-white"
+                          : "text-white/65 hover:bg-white/[0.07] hover:text-white"
+                      }`}
+                    >
+                      {active && (
+                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-[var(--saffron-500)]" />
+                      )}
+                      <item.icon className="w-[17px] h-[17px] shrink-0" strokeWidth={2} aria-hidden="true" />
+                      <span className="truncate">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </nav>
 
-        <div className="p-3 border-t border-[var(--border-light)] space-y-1 shrink-0">
-          <Link href="/" className="flex items-center gap-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-light)] px-3 py-2 rounded-lg transition-colors w-full">
-            <Shield className="w-4 h-4" strokeWidth={1.75} /> Back to Home
+        {/* Footer actions */}
+        <div className="p-3 border-t border-white/10 space-y-0.5 shrink-0">
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-[13.5px] font-medium text-white/65 hover:bg-white/[0.07] hover:text-white transition-colors"
+          >
+            <Home className="w-[17px] h-[17px] shrink-0" strokeWidth={2} aria-hidden="true" />
+            Back to Portal Home
           </Link>
-          <button onClick={logout} className="flex items-center gap-2 text-sm font-medium text-[var(--danger)] hover:bg-[var(--danger-light)] px-3 py-2 rounded-lg transition-colors w-full cursor-pointer">
-            <LogOut className="w-4 h-4" strokeWidth={1.75} /> Sign Out
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-[13.5px] font-medium text-[#ff9a92] hover:bg-[var(--danger)]/20 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-[17px] h-[17px] shrink-0" strokeWidth={2} aria-hidden="true" />
+            Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* ── Main column ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 bg-[var(--surface)] border-b border-[var(--border)] flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30 shrink-0">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} aria-label="Open menu" className="lg:hidden text-[var(--foreground-secondary)] hover:text-[var(--foreground)]">
+        {/* Top bar */}
+        <header className="h-[64px] bg-white border-b border-[var(--border)] flex items-center justify-between gap-3 px-4 lg:px-6 sticky top-0 z-30 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              className="lg:hidden text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] p-1 cursor-pointer"
+            >
               <Menu className="w-5 h-5" />
             </button>
-            <Link href="/" className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:underline">
-              Home
-            </Link>
+            <nav className="hidden sm:flex items-center gap-1.5 text-[12.5px] min-w-0" aria-label="Breadcrumb">
+              <Link href="/" className="text-[var(--foreground-tertiary)] hover:text-[var(--navy-700)] transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="w-3.5 h-3.5 text-[var(--gray-300)] shrink-0" aria-hidden="true" />
+              <span className="text-[var(--foreground-tertiary)] capitalize">{role}</span>
+              <ChevronRight className="w-3.5 h-3.5 text-[var(--gray-300)] shrink-0" aria-hidden="true" />
+              <span className="font-semibold text-[var(--navy-800)] truncate">{currentLabel}</span>
+            </nav>
           </div>
 
-          <div className="hidden lg:block">
-            <span className="text-sm text-[var(--foreground-secondary)]">{user.organization?.legalName || ROLE_LABELS[user.role]}</span>
+          <div className="hidden xl:block text-[12.5px] text-[var(--foreground-secondary)] truncate max-w-xs">
+            {user.organization?.legalName || ROLE_LABELS[user.role]}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link href={`/${role}/notifications`} aria-label="Notifications" className="relative p-2 text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg transition-colors">
-              <Bell className="w-5 h-5" strokeWidth={1.75} />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              href={`/${role}/notifications`}
+              aria-label="Notifications"
+              className="relative p-2 text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] hover:bg-[var(--navy-50)] rounded-[var(--radius)] transition-colors"
+            >
+              <Bell className="w-[18px] h-[18px]" strokeWidth={2} aria-hidden="true" />
               {(user.unreadNotifications ?? 0) > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-4 h-4 bg-[var(--danger)] text-white text-[9px] font-semibold rounded-full flex items-center justify-center px-1">
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-[var(--danger)] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
                   {(user.unreadNotifications ?? 0) > 9 ? "9+" : user.unreadNotifications}
                 </span>
               )}
             </Link>
 
             <div className="relative">
-              <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg pl-1 pr-2 py-1 transition-colors cursor-pointer">
-                <span className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-xs font-medium text-white">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-expanded={menuOpen}
+                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-[var(--radius)] hover:bg-[var(--navy-50)] transition-colors cursor-pointer"
+              >
+                <span className="w-8 h-8 bg-[var(--navy-800)] rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0">
                   {user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
-                <span className="hidden sm:block font-medium">{user.name.split(" ")[0]}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[var(--foreground-tertiary)] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+                <span className="hidden sm:block text-[13.5px] font-semibold text-[var(--foreground)] max-w-[110px] truncate">
+                  {user.name.split(" ")[0]}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[var(--foreground-tertiary)] transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
               </button>
+
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg z-50 py-2 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-[var(--border-light)]">
-                      <div className="text-sm font-semibold text-[var(--foreground)]">{user.name}</div>
-                      <div className="text-xs text-[var(--foreground-tertiary)] truncate">{user.email}</div>
-                      <span className="inline-block mt-1.5 text-[10px] font-medium bg-[var(--surface-2)] text-[var(--foreground-secondary)] px-2 py-0.5 rounded-md">
-                        {ROLE_LABELS[user.role]}
-                      </span>
+                  <div className="absolute right-0 top-[50px] w-[272px] bg-white border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] z-50 overflow-hidden">
+                    <div className="px-4 py-3.5 bg-[var(--navy-50)] border-b border-[var(--border)]">
+                      <div className="text-[13.5px] font-bold text-[var(--navy-800)] truncate">{user.name}</div>
+                      <div className="text-[12px] text-[var(--foreground-tertiary)] truncate mt-0.5">{user.email}</div>
+                      <span className="inline-block mt-2 badge badge-navy">{ROLE_LABELS[user.role]}</span>
                     </div>
                     <div className="py-1.5">
-                      <Link href={`/${role}/profile`} className="flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-2)]" onClick={() => setMenuOpen(false)}>
-                        <User className="w-4 h-4 text-[var(--foreground-tertiary)]" strokeWidth={1.75} /> Profile
+                      <Link
+                        href={`/${role}/profile`}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-medium text-[var(--foreground-secondary)] hover:bg-[var(--navy-50)] hover:text-[var(--navy-800)] transition-colors"
+                      >
+                        <User className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" /> Profile
                       </Link>
-                      <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--danger)] hover:bg-[var(--danger-light)] cursor-pointer">
-                        <LogOut className="w-4 h-4" strokeWidth={1.75} /> Sign Out
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-medium text-[var(--danger)] hover:bg-[var(--danger-light)] transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" /> Sign Out
                       </button>
                     </div>
                   </div>
@@ -183,7 +299,9 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
+        <main id="main-content" className="flex-1 p-4 lg:p-6 overflow-auto">
+          {children}
+        </main>
       </div>
 
       <ChatBot context={role} />

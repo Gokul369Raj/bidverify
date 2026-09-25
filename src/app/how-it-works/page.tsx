@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SiteNav from "@/components/SiteNav";
-import { Logo } from "@/components/Logo";
+import GovtFooter from "@/components/GovtFooter";
 import { ArrowLeft, FileText, ScanLine, ShieldCheck, Scale } from "lucide-react";
 
 const STEPS = [
@@ -122,12 +122,7 @@ export default function HowItWorksPage() {
         </div>
       </main>
 
-      <footer className="bg-[var(--surface)] border-t border-[var(--border)]">
-        <div className="max-w-[1100px] mx-auto px-6 py-8 flex items-center justify-between">
-          <Logo size="small" />
-          <div className="caption">© 2026 BIDGUARD AI</div>
-        </div>
-      </footer>
+      <GovtFooter />
     </div>
   );
 }

@@ -394,8 +394,8 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
     return c.split("\n").map((line, i) => {
       const html = line
         .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
-        .replace(/`([^`]+)`/g, '<code class="bg-white/10 px-1 py-0.5 rounded text-[11px]">$1</code>');
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-[var(--foreground)]">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-[var(--surface-3)] px-1 py-0.5 rounded text-[11px]">$1</code>');
       const isBullet = /^\s*[•🔹📄🪪✍️📊✔️⚡🔵📧✅❌⚠️📝🏁⏳🔍📩🏭📍🪪📋🏷️1️⃣2️⃣3️⃣]/.test(line) || /^\d️⃣/.test(line);
       return <p key={i} className={`${isBullet ? "pl-1" : ""} ${line.trim() === "" ? "h-2" : ""}`} dangerouslySetInnerHTML={{ __html: html || "&nbsp;" }} />;
     });
@@ -406,28 +406,28 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
       {!isOpen && (
         <button onClick={() => { setIsOpen(true); if (messages.length === 0) openGreeting(); }}
           aria-label="AI Assistant"
-          className="fixed bottom-6 right-6 z-[10000] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 cursor-pointer bg-[#0071e3] hover:bg-[#2997ff] text-white ring-4 ring-[#0071e3]/20">
+          className="fixed bottom-6 right-6 z-[10000] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 cursor-pointer bg-[var(--navy-800)] hover:bg-[var(--navy-700)] text-white ring-4 ring-[var(--navy-800)]/15">
           <MessageCircle className="w-6 h-6" />
         </button>
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 z-[9999] sm:w-[420px] sm:max-w-[calc(100vw-3rem)] sm:h-[640px] sm:max-h-[calc(100vh-8rem)] bg-[#0A0A0C] sm:bg-[#1C1C1E] sm:border sm:border-white/12 sm:rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 z-[9999] sm:w-[420px] sm:max-w-[calc(100vw-3rem)] sm:h-[640px] sm:max-h-[calc(100vh-8rem)] bg-[var(--surface)] sm:bg-[var(--surface)] sm:border sm:border-[var(--border)] sm:rounded-[24px] shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="glass-nav px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between border-b border-white/10 shrink-0">
+          <div className="bg-[var(--navy-800)] px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[#2997ff] to-[#0066cc] flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[var(--navy-600)] to-[var(--navy-800)] flex items-center justify-center">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold text-sm text-white leading-tight">BIDGUARD AI Assistant</h3>
-                <p className="text-[10px] text-[#30d158] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#30d158] rounded-full animate-pulse" /> Online · {userCtx ? "Context-aware" : "Loading..."}
+                <p className="text-[10px] text-white/65 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-[var(--green-500)] rounded-full animate-pulse" /> Online · {userCtx ? "Context-aware" : "Loading..."}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <button onClick={resetChat} title="New conversation" className="w-8 h-8 flex items-center justify-center text-[#86868b] hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer">
+              <button onClick={resetChat} title="New conversation" className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer">
                 <RefreshCw className="w-4 h-4" />
               </button>
               <button onClick={() => setIsOpen(false)} title="Close chat" className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer">
@@ -441,17 +441,17 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
             {messages.map((m, idx) => (
               <div key={m.id} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 {m.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-b from-[#2997ff] to-[#0066cc] flex items-center justify-center shrink-0 mt-1 mr-2">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-b from-[var(--navy-600)] to-[var(--navy-800)] flex items-center justify-center shrink-0 mt-1 mr-2">
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                 )}
                 <div className="max-w-[85%]">
                   <div className={`rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed whitespace-pre-wrap ${m.role === "user"
-                    ? "bg-[#0071e3] text-white rounded-br-md"
-                    : "bg-white/[0.07] border border-white/10 text-[#e8e8ed] rounded-bl-md"}`}>
+                    ? "bg-[var(--navy-800)] text-white rounded-br-md"
+                    : "bg-[var(--surface-2)] border border-[var(--border)] text-[var(--foreground)] rounded-bl-md"}`}>
                     {m.role === "assistant" ? renderContent(m.content) : m.content}
                   </div>
-                  <div className={`text-[9px] text-[#86868b] mt-1 ${m.role === "user" ? "text-right pr-1" : "ml-1"}`}>
+                  <div className={`text-[9px] text-[var(--foreground-tertiary)] mt-1 ${m.role === "user" ? "text-right pr-1" : "ml-1"}`}>
                     {new Date(m.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                     {m.role === "assistant" && <span className="ml-1.5">· AI suggestion only</span>}
                   </div>
@@ -459,7 +459,7 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {m.followUps.map((f, i) => (
                         <button key={i} onClick={() => send(f)}
-                          className="text-[11px] font-medium text-[#64b5ff] bg-[#2997ff]/10 border border-[#2997ff]/25 hover:bg-[#2997ff]/20 hover:text-white px-3 py-1.5 rounded-full transition-all cursor-pointer pressable">
+                          className="text-[11px] font-medium text-[var(--navy-600)] bg-[var(--navy-100)] border border-[var(--navy-200)] hover:bg-[var(--navy-700)]/20 hover:text-[var(--navy-800)] px-3 py-1.5 rounded-full transition-all cursor-pointer pressable">
                           {f}
                         </button>
                       ))}
@@ -467,8 +467,8 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
                   )}
                 </div>
                 {m.role === "user" && (
-                  <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center shrink-0 mt-1 ml-2">
-                    <User className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 rounded-full bg-[var(--gray-200)] flex items-center justify-center shrink-0 mt-1 ml-2">
+                    <User className="w-4 h-4 text-[var(--foreground)]" />
                   </div>
                 )}
               </div>
@@ -476,12 +476,12 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
 
             {typing && (
               <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-b from-[#2997ff] to-[#0066cc] flex items-center justify-center shrink-0 mt-1 mr-2">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-b from-[var(--navy-600)] to-[var(--navy-800)] flex items-center justify-center shrink-0 mt-1 mr-2">
+                  <Bot className="w-4 h-4 text-[var(--foreground)]" />
                 </div>
-                <div className="bg-white/[0.07] border border-white/10 rounded-2xl rounded-bl-md px-4 py-3.5">
+                <div className="bg-white/[0.07] border border-[var(--border)] rounded-2xl rounded-bl-md px-4 py-3.5">
                   <div className="flex gap-1.5">
-                    {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-[#a1a1a6] rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+                    {[0, 150, 300].map(d => <span key={d} className="w-1.5 h-1.5 bg-[var(--gray-400)] rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
                   </div>
                 </div>
               </div>
@@ -495,7 +495,7 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
               <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
                 {quickSet.map((q, i) => (
                   <button key={i} onClick={() => send(q)} disabled={typing}
-                    className="text-[11px] whitespace-nowrap text-[#c7c7cc] bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 cursor-pointer">
+                    className="text-[11px] whitespace-nowrap text-[var(--foreground-secondary)] bg-[var(--surface-2)] hover:bg-white/[0.12] border border-[var(--border)] px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 cursor-pointer">
                     {q}
                   </button>
                 ))}
@@ -504,18 +504,18 @@ export default function ChatBot({ context }: { context?: "landing" | "admin" | "
           )}
 
           {/* Input */}
-          <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 sm:p-3.5 border-t border-white/10 shrink-0 flex items-center gap-2">
+          <form onSubmit={(e) => { e.preventDefault(); send(); }} className="p-3 sm:p-3.5 border-t border-[var(--border)] shrink-0 flex items-center gap-2">
             <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
               placeholder="Kuch bhi puchho — applications, bids, documents..."
               aria-label="Message"
               disabled={typing}
-              className="flex-1 px-4 py-2.5 bg-white/[0.06] border border-white/10 rounded-full text-sm text-white placeholder:text-[#86868b] focus:border-[#2997ff] focus:bg-white/10 focus:outline-none disabled:opacity-50 transition-colors" />
+              className="flex-1 px-4 py-2.5 bg-[var(--surface-2)] border border-[var(--border)] rounded-full text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-tertiary)] focus:border-[var(--navy-600)] focus:bg-[var(--surface-3)] focus:outline-none disabled:opacity-50 transition-colors" />
             <button type="submit" disabled={!input.trim() || typing} aria-label="Send"
-              className="w-10 h-10 bg-[#0071e3] hover:bg-[#2997ff] disabled:opacity-40 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
+              className="w-10 h-10 bg-[var(--navy-800)] hover:bg-[var(--navy-700)] disabled:opacity-40 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
               {typing ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Send className="w-4 h-4 text-white" />}
             </button>
           </form>
-          <p className="text-[9px] text-center text-[#48484a] pb-2 -mt-1 shrink-0">Context-aware AI · Officer makes final decisions</p>
+          <p className="text-[9px] text-center text-[var(--foreground-tertiary)] pb-2 -mt-1 shrink-0">Context-aware AI · Officer makes final decisions</p>
         </div>
       )}
     </>

@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     const [tenders, total] = await Promise.all([
       prisma.tender.findMany({ where, orderBy: { publishDate: "desc" }, skip: (page - 1) * limit, take: limit, select: {
         id: true, tenderNumber: true, title: true, buyerOrganization: true, category: true, state: true, city: true,
+        status: true,
         publishDate: true, closingDate: true, source: true, dataLabel: true, emdAmount: true, estimatedValueLakh: true,
         requirementsFrozen: true, aiAnalysisStatus: true,
         _count: { select: { requirements: true, bids: true } },

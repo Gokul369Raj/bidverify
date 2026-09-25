@@ -52,30 +52,45 @@ function ComparisonInner() {
   });
 
   useEffect(() => {
-    if (!bidId) return;
+    if (!bidId) {
+      // No bid selected — stop the spinner so the empty state can render.
+      setLoading(false);
+      return;
+    }
+    let alive = true;
     fetch(`/api/bids/${bidId}`)
       .then((r) => r.json())
       .then((d) => {
+        if (!alive) return;
         if (d.ok) {
-          setBid(d.data);
-          initializeComparison();
+          // The endpoint returns { bid, tender }; fold the tender in so the
+          // comparison builder can read `bid.tender.requirements`.
+          const composed = { ...d.data.bid, tender: d.data.tender };
+          setBid(composed);
+          // Build from the freshly fetched bid — `bid` state is still null in
+          // this tick, so reading it here would always bail out.
+          initializeComparison(composed);
         }
-      });
+      })
+      .catch(() => { /* fall through to the empty state */ })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bidId]);
 
-  const initializeComparison = () => {
-    if (!bid) return;
+  const initializeComparison = (b: any) => {
+    if (!b) return;
 
-    const evaluations = bid.complianceResults || [];
+    const evaluations = b.complianceResults || [];
     const mandatoryMap = new Map(
-      (bid.tender?.requirements || []).map((r: any) => [r.id, r.mandatory])
+      (b.tender?.requirements || []).map((r: any) => [r.id, r.mandatory])
     );
 
     const counts = { total: 0, passed: 0, failed: 0, underReview: 0, verificationUnavailable: 0 };
     const items: ComparisonItem[] = [];
 
     for (const ev of evaluations) {
-      const req = bid.tender?.requirements?.find((r: any) => r.id === ev.requirementId);
+      const req = b.tender?.requirements?.find((r: any) => r.id === ev.requirementId);
       if (!req) continue;
 
       counts.total++;
@@ -90,7 +105,7 @@ function ComparisonInner() {
         counts.underReview++;
 
       // Get document info
-      const doc = bid.documents?.find((d: any) => d.id === ev.evidence?.[0]?.documentId);
+      const doc = b.documents?.find((d: any) => d.id === ev.evidence?.[0]?.documentId);
 
       items.push({
         requirementCode: ev.ruleCode || ev.code || req.code || "",
@@ -116,131 +131,148 @@ function ComparisonInner() {
     });
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64">
-    <div className="text-sm text-[#a1a1a6] animate-pulse">Loading comparison...</div>
-  </div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-64 gap-2.5 text-[var(--foreground-secondary)]">
+      <Loader2 className="w-5 h-5 animate-spin text-[var(--navy-700)]" aria-hidden="true" />
+      <span className="text-sm">Loading comparison…</span>
+    </div>
+  );
 
-  if (!bid) return <div className="text-center py-20 text-[#a1a1a6]">Bid not found</div>;
+  if (!bid) return (
+    <div className="govt-panel max-w-lg mx-auto my-10 p-10 text-center">
+      <span className="w-12 h-12 rounded-full bg-[var(--navy-100)] flex items-center justify-center mx-auto mb-4">
+        <FileText className="w-6 h-6 text-[var(--navy-700)]" aria-hidden="true" />
+      </span>
+      <h2 className="text-[17px] font-bold text-[var(--navy-800)] mb-1.5">No bid selected</h2>
+      <p className="text-[13.5px] text-[var(--foreground-secondary)] leading-relaxed mb-5">
+        Open a bid from the verification queue or a tender&apos;s bid list to see its
+        requirement-wise compliance comparison.
+      </p>
+      <Link href="/officer/verification" className="btn btn-navy btn-sm">
+        Go to Verification Queue
+      </Link>
+    </div>
+  );
 
   const isPassing = summary.complianceScore >= 70;
   const scoreBadgeClassName = isPassing
-    ? "bg-[#30d158]/20 text-green-800 text-sm font-medium px-3 py-1 rounded border border-green-300"
-    : "bg-[#ff453a]/20 text-red-800 text-sm font-medium px-3 py-1 rounded border border-red-300";
+    ? "bg-[var(--green-100)] text-green-800 text-sm font-medium px-3 py-1 rounded border border-green-300"
+    : "bg-[var(--red-100)] text-red-800 text-sm font-medium px-3 py-1 rounded border border-red-300";
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#161617] border border-white/10 rounded-xl p-6">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-white">Bid Comparison — {bid.bidNumber}</h1>
-            <div className="text-sm text-[#a1a1a6]">Tender: {bid.tender?.tenderNumber} — {bid.tender?.title}</div>
+            <h1 className="text-2xl font-bold text-[var(--foreground)]">Bid Comparison — {bid.bidNumber}</h1>
+            <div className="text-sm text-[var(--foreground-tertiary)]">Tender: {bid.tender?.tenderNumber} — {bid.tender?.title}</div>
             <div className="mt-2">
               <span className={scoreBadgeClassName}>
                 Compliance Score: {summary.complianceScore}/100 {isPassing ? "(Passing)" : "(Requires Review)"}
               </span>
             </div>
           </div>
-          <div className="w-16 h-16 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Shield className="w-8 h-8 text-[#c7c7cc]" />
+          <div className="w-16 h-16 bg-[var(--surface-3)] rounded-lg flex items-center justify-center flex-shrink-0">
+            <Shield className="w-8 h-8 text-[var(--foreground-secondary)]" />
           </div>
         </div>
       </div>
 
       {/* Summary Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-        <div className="bg-[#161617] border border-white/10 rounded-xl p-3">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-4 h-4 text-[#30d158]" />
+            <div className="w-8 h-8 bg-[var(--surface-3)] rounded-lg flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-[var(--green-600)]" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">{summary.passed}</div>
-              <div className="text-xs text-[#a1a1a6]">Passed</div>
+              <div className="text-lg font-bold text-[var(--foreground)]">{summary.passed}</div>
+              <div className="text-xs text-[var(--foreground-tertiary)]">Passed</div>
             </div>
           </div>
         </div>
-        <div className="bg-[#161617] border border-white/10 rounded-xl p-3">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-[var(--surface-3)] rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertTriangle className="w-4 h-4 text-[#ffd60a]" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">{summary.failed}</div>
-              <div className="text-xs text-[#a1a1a6]">Failed</div>
+              <div className="text-lg font-bold text-[var(--foreground)]">{summary.failed}</div>
+              <div className="text-xs text-[var(--foreground-tertiary)]">Failed</div>
             </div>
           </div>
         </div>
-        <div className="bg-[#161617] border border-white/10 rounded-xl p-3">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-[var(--surface-3)] rounded-lg flex items-center justify-center flex-shrink-0">
               <AlertTriangle className="w-4 h-4 text-[#ffd60a]" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">{summary.underReview}</div>
-              <div className="text-xs text-[#a1a1a6]">Under Review</div>
+              <div className="text-lg font-bold text-[var(--foreground)]">{summary.underReview}</div>
+              <div className="text-xs text-[var(--foreground-tertiary)]">Under Review</div>
             </div>
           </div>
         </div>
-        <div className="bg-[#161617] border border-white/10 rounded-xl p-3">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 text-[#c7c7cc]" />
+            <div className="w-8 h-8 bg-[var(--surface-3)] rounded-lg flex items-center justify-center flex-shrink-0">
+              <Clock className="w-4 h-4 text-[var(--foreground-secondary)]" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">{summary.totalRequirements}</div>
-              <div className="text-xs text-[#a1a1a6]">Total</div>
+              <div className="text-lg font-bold text-[var(--foreground)]">{summary.totalRequirements}</div>
+              <div className="text-xs text-[var(--foreground-tertiary)]">Total</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Requirements Comparison Table */}
-      <div className="bg-[#161617] border border-white/10 rounded-xl overflow-hidden">
-        <div className="border-b border-white/10">
-          <h2 className="font-semibold text-white px-4 py-3">Requirement-wise Compliance Comparison</h2>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
+        <div className="border-b border-[var(--border)]">
+          <h2 className="font-semibold text-[var(--foreground)] px-4 py-3">Requirement-wise Compliance Comparison</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-left text-xs text-[#a1a1a6]">
+              <tr className="border-b border-[var(--border)] text-left text-xs text-[var(--foreground-tertiary)]">
                 <th className="px-4 py-3">Requirement</th>
                 <th className="px-4 py-3 text-right">Result</th>
                 <th className="px-4 py-3">Explanation</th>
                 <th className="px-4 py-3">Document</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className="divide-y divide-[var(--border-light)]">
               {comparison.map((item, i) => {
                 const resultClass =
                   item.result === "PASS"
-                    ? "text-[#30d158]"
+                    ? "text-[var(--green-600)]"
                     : item.result === "FAIL"
-                      ? "text-[#ff6961]"
+                      ? "text-[var(--danger)]"
                       : "text-[#ffd60a]";
                 const resultBadge = item.result === "PASS"
-                  ? <span className="bg-[#30d158]/20 text-green-800 text-xs px-2 py-0.5 rounded">PASS</span>
+                  ? <span className="bg-[var(--green-100)] text-green-800 text-xs px-2 py-0.5 rounded">PASS</span>
                   : item.result === "FAIL"
-                    ? <span className="bg-[#ff453a]/20 text-red-800 text-xs px-2 py-0.5 rounded">FAIL</span>
+                    ? <span className="bg-[var(--red-100)] text-red-800 text-xs px-2 py-0.5 rounded">FAIL</span>
                     : <span className="bg-[#ffd60a]/20 text-amber-800 text-xs px-2 py-0.5 rounded">REVIEW</span>;
 
                 return (
-                  <tr key={i} className="hover:bg-white/5">
-                    <td className="px-4 py-3 font-medium text-white">{item.requirementTitle}</td>
+                  <tr key={i} className="hover:bg-[var(--navy-50)]">
+                    <td className="px-4 py-3 font-medium text-[var(--foreground)]">{item.requirementTitle}</td>
                     <td className="px-4 py-3 text-right">
                       {resultBadge}
-                      <div className="text-xs text-[#a1a1a6] mt-1">{item.explanation.slice(0, 100)}...</div>
+                      <div className="text-xs text-[var(--foreground-tertiary)] mt-1">{item.explanation.slice(0, 100)}...</div>
                     </td>
-                    <td className="px-4 py-3 text-[#c7c7cc]">{item.explanation}</td>
+                    <td className="px-4 py-3 text-[var(--foreground-secondary)]">{item.explanation}</td>
                     <td className="px-4 py-3">
                       {item.document ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-[#86868b]">{item.document.docType}</span>
-                          <a href={`/officer/verification/${bid.id}`} className="text-[#2997ff] underline text-xs">
+                          <span className="text-[10px] text-[var(--foreground-tertiary)]">{item.document.docType}</span>
+                          <a href={`/officer/verification/${bid.id}`} className="text-[var(--navy-600)] underline text-xs">
                             View details
                           </a>
                         </div>
                       ) : (
-                        <span className="text-[#86868b] text-xs">No document</span>
+                        <span className="text-[var(--foreground-tertiary)] text-xs">No document</span>
                       )}
                     </td>
                   </tr>
@@ -252,33 +284,33 @@ function ComparisonInner() {
       </div>
 
       {/* AI Recommendation */}
-      <div className="bg-[#161617] border border-white/10 rounded-xl p-6">
-        <h2 className="font-semibold text-white mb-4">AI Recommendation</h2>
-        <p className="font-medium text-white">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-4">AI Recommendation</h2>
+        <p className="font-medium text-[var(--foreground)]">
           {summary.riskLevel === "LOW"
             ? "Recommend proceeding to technical evaluation"
             : summary.riskLevel === "MEDIUM"
               ? "Manual review required before decision"
               : "High risk — officer approval required"}
         </p>
-        <p className="text-sm text-[#a1a1a6] mt-1">
+        <p className="text-sm text-[var(--foreground-tertiary)] mt-1">
           Compliance score {summary.complianceScore}/100 based on {summary.totalRequirements} requirements evaluated.
         </p>
       </div>
 
       {/* Quick Navigation */}
-      <div className="bg-[#161617] border border-white/10 rounded-xl p-6">
-        <h2 className="font-semibold text-white mb-3">Quick Actions</h2>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-3">Quick Actions</h2>
         <div className="grid grid-cols-2 gap-3">
           <Link
             href={`/officer/verification/${bid.id}`}
-            className="flex items-center gap-2 bg-blue-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-[#64b5ff] transition-colors"
+            className="flex items-center gap-2 bg-[var(--navy-800)] text-white rounded-lg px-4 py-2 text-sm hover:bg-[var(--navy-600)] transition-colors"
           >
             <FileText className="w-4 h-4" /> View Full Verification
           </Link>
           <Link
             href="/officer/tenders"
-            className="flex items-center gap-2 bg-slate-700 text-white rounded-lg px-4 py-2 text-sm hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2 bg-[var(--gray-600)] text-white rounded-lg px-4 py-2 text-sm hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Tenders
           </Link>
@@ -290,7 +322,7 @@ function ComparisonInner() {
 
 export default function ComparisonPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="text-sm text-[#a1a1a6] animate-pulse">Loading…</div></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="text-sm text-[var(--foreground-tertiary)] animate-pulse">Loading…</div></div>}>
       <ComparisonInner />
     </Suspense>
   );

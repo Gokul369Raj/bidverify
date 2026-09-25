@@ -1,7 +1,13 @@
 "use client";
+
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { Shield, Eye, EyeOff } from "lucide-react";
+import { Emblem } from "@/components/Emblem";
+import AuthPanel from "@/components/AuthPanel";
+import {
+  Eye, EyeOff, ShieldCheck, Loader2, AlertCircle, LogIn, ArrowLeft,
+  Lock, Mail,
+} from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -29,108 +36,200 @@ export default function LoginPage() {
       }
       setError("");
       const redirectTo = data?.data?.redirect || "/bidder";
-      setTimeout(() => { window.location.href = redirectTo; }, 300);
+      setTimeout(() => { window.location.href = redirectTo; }, 250);
     } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
 
+  const inputBase =
+    "w-full rounded-[var(--radius)] border-[1.5px] border-[var(--border)] bg-white text-[14px] text-[var(--foreground)] placeholder:text-[var(--foreground-tertiary)] outline-none transition-all focus:border-[var(--navy-600)] focus:ring-[3px] focus:ring-[var(--navy-600)]/14 disabled:bg-[var(--surface-2)]";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0B1D3A] via-[#0F2847] to-[#162D52] flex items-center justify-center px-4 py-12">
-      {/* Background decorations */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "40px 40px" }} />
+    <div className="min-h-screen flex bg-[var(--surface-2)]">
+      <AuthPanel
+        title="Evidence-backed procurement, from notice to decision."
+        subtitle="Sign in to verify documents, evaluate bids and maintain a complete audit trail across every government tender."
+        points={[
+          "Cross-verification with GSTN, PAN, Udyam, EPFO & ESIC",
+          "Automated 12-step document verification pipeline",
+          "Immutable audit trail for every evaluation decision",
+        ]}
+      />
 
-      <div className="relative w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-[var(--saffron)] to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-7 h-7 text-white" />
-            </div>
-            <div className="text-left">
-              <div className="text-white font-bold text-2xl leading-none">BIDGUARD <span className="text-[var(--saffron)]">AI</span></div>
-              <div className="text-blue-200/40 text-xs mt-0.5">Secure Procurement. Stronger India.</div>
-            </div>
+      {/* ── Form side ── */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        <div className="tricolor-bar lg:hidden" />
+
+        {/* Compact masthead for mobile */}
+        <div className="lg:hidden flex items-center justify-between gap-3 px-5 py-3.5 bg-white border-b border-[var(--border)]">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Emblem height={34} />
+            <span className="text-[15px] font-extrabold text-[var(--navy-800)] tracking-tight">
+              BidGuard<span className="text-[var(--saffron-500)]"> AI</span>
+            </span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-blue-200/60 text-sm">Login to your account</p>
+          <Link href="/" className="text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)]">
+            Home
+          </Link>
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white/[0.06] backdrop-blur-sm rounded-2xl border border-white/10 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-300 text-sm rounded-xl px-4 py-3">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-blue-200/80 mb-1.5">
-                Email
-              </label>
-              <input
-                id="email" type="email" required
-                value={email} onChange={e => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl text-white text-sm px-4 py-3 outline-none focus:border-[var(--saffron)] focus:ring-1 focus:ring-[var(--saffron)]/30 placeholder-blue-200/30 transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-blue-200/80 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password" type={showPassword ? "text" : "password"} required
-                  value={password} onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl text-white text-sm px-4 py-3 pr-10 outline-none focus:border-[var(--saffron)] focus:ring-1 focus:ring-[var(--saffron)]/30 placeholder-blue-200/30 transition-all"
-                  placeholder="Enter your password"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200/40 hover:text-blue-200/70 cursor-pointer">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit" disabled={loading}
-              className="w-full bg-[var(--saffron)] hover:bg-[var(--saffron-dark)] text-white font-semibold py-3 px-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-saffron/20"
+        <div className="flex-1 flex items-center justify-center px-5 py-10 sm:py-14">
+          <div className="w-full max-w-[420px]">
+            <Link
+              href="/"
+              className="hidden lg:inline-flex items-center gap-2 text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] transition-colors mb-7"
             >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
+              <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+              Back to portal home
+            </Link>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-transparent px-3 text-blue-200/30">or</span>
+            <div className="mb-7">
+              <span className="badge badge-navy mb-3">
+                <Lock className="w-3 h-3" aria-hidden="true" /> Secure Sign-in
+              </span>
+              <h1 className="text-[27px] font-extrabold text-[var(--navy-800)] tracking-tight leading-tight">
+                Welcome back
+              </h1>
+              <p className="text-[14px] text-[var(--foreground-secondary)] mt-2">
+                Sign in to your BidGuard AI account to continue.
+              </p>
             </div>
+
+            <div className="bg-white rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow)] p-7">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                  <div className="notice notice-danger" role="alert">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="email" className="field-label">
+                    Registered Email ID
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-[var(--foreground-tertiary)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`${inputBase} pl-10 pr-4 py-3`}
+                      placeholder="you@organisation.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="password" className="field-label !mb-0">
+                      Password
+                    </label>
+                    <Link
+                      href="/forgot-password"
+                      className="text-[12.5px] font-semibold text-[var(--navy-600)] hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[var(--foreground-tertiary)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={`${inputBase} pl-10 pr-11 py-3`}
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--foreground-tertiary)] hover:text-[var(--navy-700)] cursor-pointer p-1"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" disabled={loading} className="btn btn-navy w-full btn-lg">
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                      Verifying credentials…
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" aria-hidden="true" />
+                      Sign In
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="flex items-center gap-3 my-6">
+                <span className="flex-1 h-px bg-[var(--border)]" />
+                <span className="text-[12px] font-medium text-[var(--foreground-tertiary)]">New to the portal?</span>
+                <span className="flex-1 h-px bg-[var(--border)]" />
+              </div>
+
+              <Link href="/register" className="btn btn-outline w-full">
+                Create a Bidder Account
+              </Link>
+            </div>
+
+            {/* Demo credentials — helpful during evaluation */}
+            <div className="mt-5 rounded-[var(--radius)] border border-[var(--border)] bg-white overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowDemo(!showDemo)}
+                className="w-full flex items-center justify-between px-4 py-3 text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[var(--navy-600)]" aria-hidden="true" />
+                  Demo accounts for evaluation
+                </span>
+                <span className="text-[var(--foreground-tertiary)]">{showDemo ? "−" : "+"}</span>
+              </button>
+              {showDemo && (
+                <div className="border-t border-[var(--border)] divide-y divide-[var(--border-light)]">
+                  {[
+                    { role: "Bidder", email: "sunil.kumar@abcindustries.example", pass: "password123" },
+                    { role: "Procurement Officer", email: "rajesh.verma@procurement.gov.in", pass: "password123" },
+                    { role: "Super Admin", email: "admin@bidverify.ai", pass: "admin@bidverify2026" },
+                  ].map((d) => (
+                    <button
+                      key={d.email}
+                      type="button"
+                      onClick={() => { setEmail(d.email); setPassword(d.pass); }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-[var(--navy-50)] transition-colors cursor-pointer"
+                    >
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-[var(--navy-600)]">{d.role}</div>
+                      <div className="text-[12px] text-[var(--foreground-secondary)] mt-0.5">{d.email}</div>
+                      <div className="text-[11px] text-[var(--foreground-tertiary)] mono">{d.pass}</div>
+                    </button>
+                  ))}
+                  <p className="px-4 py-2.5 text-[11px] text-[var(--foreground-tertiary)] bg-[var(--surface-2)]">
+                    Click any account to auto-fill the form.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <p className="text-center text-[11.5px] text-[var(--foreground-tertiary)] mt-6 leading-relaxed">
+              Protected under the Information Technology Act, 2000.
+              <br />
+              Unauthorised access is prohibited and logged.
+            </p>
           </div>
-
-          <Link
-            href="/register"
-            className="block w-full text-center bg-white/5 hover:bg-white/10 text-white font-medium py-3 px-4 rounded-xl border border-white/10 transition-colors"
-          >
-            Create New Account
-          </Link>
-        </div>
-
-        <p className="text-center text-sm text-blue-200/40 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-[var(--saffron)] hover:underline font-medium">
-            Register as Bidder
-          </Link>
-        </p>
-
-        <div className="text-center mt-4">
-          <p className="text-[10px] text-blue-200/25">
-            Smart India Hackathon 2026 • Team Anveshak 2.0
-          </p>
         </div>
       </div>
     </div>
