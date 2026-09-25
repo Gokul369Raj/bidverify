@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X, Shield } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import UserNav from "@/components/UserNav";
 import { useSession } from "@/lib/useSession";
 
@@ -12,6 +12,55 @@ const NAV_LINKS = [
   { href: "/bidder", label: "For Bidders" },
   { href: "/admin", label: "For Officers" },
 ];
+
+/* Ashoka Stambh — Three Lions Emblem SVG */
+function AshokaStambh({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 120 140" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Base platform */}
+      <rect x="20" y="120" width="80" height="8" rx="2" fill="currentColor" opacity="0.3" />
+      <rect x="25" y="116" width="70" height="6" rx="1" fill="currentColor" opacity="0.2" />
+
+      {/* Ashoka Chakra circle at base */}
+      <circle cx="60" cy="108" r="10" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.4" />
+      <circle cx="60" cy="108" r="3" fill="currentColor" opacity="0.4" />
+      {[0, 30, 60, 90, 120, 150].map((deg) => (
+        <line key={deg} x1="60" y1="98" x2="60" y2="108" stroke="currentColor" strokeWidth="0.8" opacity="0.3"
+          transform={`rotate(${deg} 60 108)`} />
+      ))}
+
+      {/* Central pillar */}
+      <rect x="55" y="50" width="10" height="58" rx="2" fill="currentColor" opacity="0.15" />
+
+      {/* Lion bodies - simplified */}
+      {/* Left lion */}
+      <path d="M20 65 C20 50 30 40 40 42 C42 38 48 35 55 38 L55 70 C48 68 35 70 30 72 C25 68 22 70 20 65Z"
+        fill="currentColor" opacity="0.25" />
+      {/* Right lion */}
+      <path d="M100 65 C100 50 90 40 80 42 C78 38 72 35 65 38 L65 70 C72 68 85 70 90 72 C95 68 98 70 100 65Z"
+        fill="currentColor" opacity="0.25" />
+      {/* Center lion */}
+      <path d="M40 55 C40 40 50 30 60 32 C70 30 80 40 80 55 L80 75 C72 72 48 72 40 75Z"
+        fill="currentColor" opacity="0.3" />
+
+      {/* Lion heads */}
+      <circle cx="60" cy="35" r="10" fill="currentColor" opacity="0.35" />
+      <circle cx="38" cy="42" r="7" fill="currentColor" opacity="0.3" />
+      <circle cx="82" cy="42" r="7" fill="currentColor" opacity="0.3" />
+
+      {/* Manes */}
+      <path d="M50 28 C52 22 58 20 60 20 C62 20 68 22 70 28" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.3" />
+
+      {/* Top bell/capital */}
+      <path d="M45 25 C45 18 52 14 60 14 C68 14 75 18 75 25" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.3" />
+
+      {/* "Satyameva Jayate" text placeholder */}
+      <text x="60" y="136" textAnchor="middle" fontSize="7" fill="currentColor" fontWeight="600" opacity="0.5">
+        सत्यमेव जयते
+      </text>
+    </svg>
+  );
+}
 
 export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
   const { user, loading } = useSession();
@@ -27,90 +76,74 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Top accent bar */}
-      <div className="h-1 bg-gradient-to-r from-[var(--saffron)] via-[var(--saffron-light)] to-[var(--navy)]" />
+      {/* Indian Flag Tricolor Bar */}
+      <div className="tricolor-bar" />
 
-      {/* Main nav */}
-      <nav className={`bg-white transition-shadow duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}>
+      {/* Government Info Bar */}
+      <div className="govt-header">
+        <div className="container flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-white/60">An Initiative under Digital India</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-4">
+            <a href="#" className="hover:text-white">Skip to Main Content</a>
+            <span className="text-white/30">|</span>
+            <span className="text-white/60 cursor-pointer hover:text-white">A-</span>
+            <span className="text-white/60 cursor-pointer hover:text-white">A</span>
+            <span className="text-white/60 cursor-pointer hover:text-white">A+</span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/60 cursor-pointer hover:text-white">English</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <nav className={`bg-white transition-shadow duration-200 ${scrolled ? "shadow-md" : "shadow-sm"}`}>
         <div className="container">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
+          <div className="flex h-[72px] items-center justify-between">
+            {/* Left: Emblem + Title */}
             <Link href="/" className="flex items-center gap-3 shrink-0">
-              <div className="w-9 h-9 rounded-lg bg-[var(--navy)] flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[var(--navy)] font-bold text-base leading-tight tracking-tight">
-                  Bidguard <span className="text-[var(--saffron)]">AI</span>
+              <AshokaStambh className="w-10 h-14 text-[var(--navy)]" />
+              <div className="flex flex-col border-l border-[var(--gray-200)] pl-3">
+                <span className="text-[var(--navy)] font-bold text-[15px] leading-tight tracking-tight">
+                  Bidguard AI
                 </span>
-                <span className="text-[10px] text-gray-400 leading-tight hidden sm:block">
-                  Secure Procurement Platform
+                <span className="text-[11px] text-[var(--gray-400)] leading-tight">
+                  Government of India
                 </span>
               </div>
             </Link>
 
-            {/* Desktop nav links */}
-            <div className="hidden lg:flex items-center gap-1">
+            {/* Center: Nav links */}
+            <div className="hidden lg:flex items-center gap-0.5">
               {NAV_LINKS.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="px-3 py-2 text-[13px] font-medium text-gray-600 hover:text-[var(--navy)] hover:bg-gray-50 rounded-md transition-colors"
+                  className="px-3 py-2 text-[13px] font-medium text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)] rounded transition-colors"
                 >
                   {l.label}
                 </Link>
               ))}
             </div>
 
-            {/* Right side */}
+            {/* Right: Actions */}
             <div className="flex items-center gap-3">
               {!loading && !user && (
                 <>
-                  <Link
-                    href="/register"
-                    className="hidden sm:inline-flex btn btn-primary text-[13px] py-2 px-4"
-                  >
+                  <Link href="/register" className="hidden sm:inline-flex btn btn-navy btn-sm">
                     Register
                   </Link>
-                  <button
-                    onClick={onSignIn}
-                    className="btn btn-outline text-[13px] py-2 px-4"
-                  >
+                  <button onClick={onSignIn} className="btn btn-outline btn-sm">
                     Login
                   </button>
                 </>
               )}
               <UserNav />
 
-              {/* Government emblem */}
-              <div className="hidden md:flex items-center border-l border-gray-200 pl-3 ml-1">
-                <svg viewBox="0 0 36 36" className="w-8 h-8" fill="none">
-                  <circle cx="18" cy="18" r="17" stroke="#0B1D3A" strokeWidth="1" fill="none" />
-                  <circle cx="18" cy="18" r="14" stroke="#0B1D3A" strokeWidth="0.5" fill="none" />
-                  {/* Simplified Ashoka Chakra */}
-                  <circle cx="18" cy="18" r="6" stroke="#0B1D3A" strokeWidth="1" fill="none" />
-                  <circle cx="18" cy="18" r="2" fill="#0B1D3A" />
-                  {[0, 30, 60, 90, 120, 150].map((deg) => (
-                    <line
-                      key={deg}
-                      x1="18"
-                      y1="12"
-                      x2="18"
-                      y2="24"
-                      stroke="#0B1D3A"
-                      strokeWidth="0.5"
-                      transform={`rotate(${deg} 18 18)`}
-                    />
-                  ))}
-                  <text x="18" y="33" textAnchor="middle" fontSize="3" fill="#0B1D3A" fontWeight="600">
-                    भारत सरकार
-                  </text>
-                </svg>
-              </div>
-
-              {/* Mobile menu toggle */}
+              {/* Mobile toggle */}
               <button
-                className="lg:hidden p-2 text-gray-500 hover:text-[var(--navy)] hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                className="lg:hidden p-2 text-[var(--gray-500)] hover:text-[var(--navy)] hover:bg-[var(--gray-100)] rounded transition-colors cursor-pointer"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 aria-label="Toggle menu"
               >
@@ -122,31 +155,24 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white">
-            <div className="container py-4 space-y-1">
+          <div className="lg:hidden border-t border-[var(--gray-200)] bg-white">
+            <div className="container py-3 space-y-0.5">
               {NAV_LINKS.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
                   onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-[var(--navy)] hover:bg-gray-50 rounded-md transition-colors"
+                  className="block px-3 py-2.5 text-sm font-medium text-[var(--gray-600)] hover:text-[var(--navy)] hover:bg-[var(--gray-50)] rounded transition-colors"
                 >
                   {l.label}
                 </Link>
               ))}
               {!loading && !user && (
-                <div className="pt-3 border-t border-gray-100 space-y-2">
-                  <Link
-                    href="/register"
-                    onClick={() => setMobileOpen(false)}
-                    className="block text-center btn btn-primary text-sm w-full"
-                  >
+                <div className="pt-3 border-t border-[var(--gray-200)] space-y-2">
+                  <Link href="/register" onClick={() => setMobileOpen(false)} className="block text-center btn btn-navy text-sm w-full">
                     Register as Bidder
                   </Link>
-                  <button
-                    onClick={() => { setMobileOpen(false); onSignIn(); }}
-                    className="block text-center btn btn-outline text-sm w-full"
-                  >
+                  <button onClick={() => { setMobileOpen(false); onSignIn(); }} className="block text-center btn btn-outline text-sm w-full">
                     Login
                   </button>
                 </div>

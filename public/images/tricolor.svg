@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <!-- Saffron -->
+  <rect x="0" y="0" width="200" height="20" fill="#FF9933"/>
+  <!-- White -->
+  <rect x="0" y="20" width="200" height="20" fill="#FFFFFF"/>
+  <!-- Green -->
+  <rect x="0" y="40" width="200" height="20" fill="#138808"/>
+</svg>
