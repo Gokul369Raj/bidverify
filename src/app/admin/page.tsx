@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import AdminGate from "@/components/AdminGate";
-import { Emblem } from "@/components/Emblem";
+import { BrandLogo } from "@/components/BrandLogo";
 import Link from "next/link";
 import {
   Shield, Users, FileText, BarChart3, Activity, Search, ChevronDown,
@@ -295,10 +295,10 @@ function AdminContent() {
       <div className="bg-[var(--navy-800)] text-white">
         <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
-            <span className="shrink-0"><Emblem height={40} variant="light" /></span>
+            <span className="shrink-0"><BrandLogo size="sm" tone="inverse" href={null} /></span>
             <div className="min-w-0 border-l border-white/20 pl-3.5">
               <h1 className="text-[16px] font-extrabold text-white leading-tight truncate">
-                BidGuard<span className="text-[var(--saffron-400)]"> AI</span> — Admin Control Center
+                Admin Control Center
               </h1>
               <p className="text-[11px] text-white/60 leading-tight mt-0.5">
                 Government Procurement Control Center

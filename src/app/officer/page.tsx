@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getSessionClient } from "@/lib/session";
 import Link from "next/link";
 import {
   FileText, Users, ClipboardCheck, AlertTriangle, Scale, BarChart3,
@@ -23,7 +24,7 @@ export default function OfficerDashboard() {
   useEffect(() => {
     Promise.all([
       fetch("/api/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: "", limit: 50 }) }).then((r) => r.json()),
-      fetch("/api/auth/me").then((r) => r.json()),
+      getSessionClient().then((u) => ({ ok: Boolean(u), data: u })),
       fetch("/api/notifications").then((r) => r.json()),
     ]).then(([tenders, me, notifs]) => {
       setData({

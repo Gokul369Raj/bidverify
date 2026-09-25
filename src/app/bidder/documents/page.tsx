@@ -257,7 +257,7 @@ export default function BidderDocumentsPage() {
         </div>
         <button 
           onClick={() => { setShowUploadModal(true); setPendingFiles([]); setIsEncryptedPdf(false); }}
-          className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-[var(--foreground)] font-semibold px-4 sm:px-5 py-2.5 rounded-lg transition-colors text-sm shadow-lg shadow-[var(--accent)]/20"
+          className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--navy-700)] text-white font-semibold px-4 sm:px-5 py-2.5 rounded-lg transition-colors text-sm shadow-lg shadow-[var(--accent)]/20 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Upload Document</span><span className="sm:hidden">Upload</span>
         </button>
@@ -367,7 +367,7 @@ export default function BidderDocumentsPage() {
               : "Try adjusting your search or category filter."}
           </p>
           {documents.length === 0 && (
-            <button onClick={() => { setShowUploadModal(true); setPendingFiles([]); setIsEncryptedPdf(false); }} className="inline-flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-[var(--foreground)] font-semibold px-6 py-3 rounded-lg transition-colors text-sm">
+            <button onClick={() => { setShowUploadModal(true); setPendingFiles([]); setIsEncryptedPdf(false); }} className="inline-flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--navy-700)] text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm cursor-pointer">
               <Plus className="w-4 h-4" /> Upload Your First Document
             </button>
           )}
@@ -434,10 +434,10 @@ export default function BidderDocumentsPage() {
 
                   {/* Quick actions */}
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={(e) => { e.stopPropagation(); setViewingDoc(doc); }} className="p-2 text-[var(--foreground-tertiary)] hover:text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="View Details">
+                    <button onClick={(e) => { e.stopPropagation(); setViewingDoc(doc); }} className="p-2 cursor-pointer text-[var(--foreground-tertiary)] hover:text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg transition-colors" title="View Details">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(doc.sha256); setMessage({ type: "success", text: "SHA-256 hash copied!" }); }} className="p-2 text-[var(--foreground-tertiary)] hover:text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg transition-colors hidden sm:flex" title="Copy Hash">
+                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(doc.sha256); setMessage({ type: "success", text: "SHA-256 hash copied!" }); }} className="p-2 cursor-pointer text-[var(--foreground-tertiary)] hover:text-[var(--foreground)] hover:bg-[var(--surface-2)] rounded-lg transition-colors hidden sm:flex" title="Copy Hash">
                       <Copy className="w-4 h-4" />
                     </button>
                     {isSelected ? <ChevronDown className="w-4 h-4 text-[var(--foreground-tertiary)]" /> : <ChevronRight className="w-4 h-4 text-[var(--foreground-tertiary)]" />}
@@ -631,7 +631,7 @@ export default function BidderDocumentsPage() {
               <button
                 onClick={handleUpload}
                 disabled={pendingFiles.length === 0 || uploading}
-                className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-[var(--foreground)] font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition-colors text-sm shadow-lg shadow-[var(--accent)]/20"
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--navy-700)] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition-colors text-sm shadow-lg shadow-[var(--accent)]/20 cursor-pointer"
               >
                 {uploading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> <span className="hidden sm:inline">{uploadPhase || "Processing..."}</span><span className="sm:hidden">...</span></>

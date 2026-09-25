@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Emblem } from "@/components/Emblem";
+import { BrandLogo } from "@/components/BrandLogo";
 import { CircleCheck } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -31,15 +31,10 @@ export default function AuthPanel({
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--navy-950)]/92 via-[var(--navy-900)]/85 to-[var(--navy-800)]/80" />
 
       <div className="relative on-dark">
-        <div className="flex items-center gap-3">
-          <Emblem height={52} variant="light" priority />
-          <div>
-            <div className="text-[19px] font-extrabold text-white leading-tight tracking-tight">
-              BidGuard<span className="text-[var(--saffron-400)]"> AI</span>
-            </div>
-            <div className="text-[11px] text-white/55 leading-tight mt-0.5">
-              Bid Compliance Platform
-            </div>
+        <div className="flex flex-col gap-3">
+          <BrandLogo size="lg" tone="inverse" href={null} />
+          <div className="text-[11px] text-white/65 leading-tight">
+            Bid Compliance Platform
           </div>
         </div>
       </div>

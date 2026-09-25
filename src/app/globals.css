@@ -59,6 +59,13 @@
   --navy-100: #E4ECF6;
   --navy-50:  #F2F6FB;
 
+  /* Bidguard logo blue */
+  --brand-blue-700: #0547B0;
+  --brand-blue-600: #0968FE;
+  --brand-blue-500: #3B87FE;
+  --brand-blue-100: #E3EEFF;
+  --brand-blue-50:  #F2F7FF;
+
   /* ── Brand ramp: India Saffron ───────────────────────────────────────── */
   --saffron-700: #B03D0C;
   --saffron-600: #E55A1B;
@@ -108,7 +115,8 @@
   --surface-3: #EDF1F7;
   --foreground: #101B2D;
   --foreground-secondary: #4A5568;
-  --foreground-tertiary: #7B8794;
+  /* #7B8794 was 3.66:1 on white — too low for meta text. #5C6672: 5.84:1 */
+  --foreground-tertiary: #5C6672;
   --border: #DEE4EC;
   --border-light: #EDF1F6;
 
@@ -212,8 +220,8 @@
   /* Skip link — visible on keyboard focus only */
   .skip-link {
     position: absolute; left: 8px; top: -60px; z-index: 200;
-    background: var(--saffron-500); color: #fff; padding: 10px 18px;
-    border-radius: 0 0 var(--radius) var(--radius); font-size: 13px; font-weight: 600;
+    background: var(--saffron-500); color: var(--navy-900); padding: 10px 18px;
+    border-radius: 0 0 var(--radius) var(--radius); font-size: 13px; font-weight: 700;
     text-decoration: none; transition: top .18s ease;
   }
   .skip-link:focus { top: 0; }
@@ -232,7 +240,8 @@
   .heading-sm { font-size: 1rem; font-weight: 700; color: var(--navy-800); }
   .heading-eyebrow {
     font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--saffron-600);
+    /* --saffron-600 is only 3.6:1 on white; --saffron-700 is 5.97:1 */
+    color: var(--saffron-700);
   }
   .text-muted { color: var(--foreground-secondary); }
   .text-sm { font-size: 0.875rem; }
@@ -268,8 +277,8 @@
   }
   .btn:disabled { opacity: .55; cursor: not-allowed; }
 
-  .btn-saffron { background: var(--saffron-500); color: #fff; }
-  .btn-saffron:hover:not(:disabled) { background: var(--saffron-600); box-shadow: 0 4px 14px rgba(255, 107, 43, .28); }
+  .btn-saffron { background: var(--saffron-700); color: #fff; }
+  .btn-saffron:hover:not(:disabled) { background: var(--saffron-600); box-shadow: 0 4px 14px rgba(176, 61, 12, .3); }
 
   .btn-navy { background: var(--navy-800); color: #fff; }
   .btn-navy:hover:not(:disabled) { background: var(--navy-700); box-shadow: 0 4px 14px rgba(4, 30, 66, .24); }

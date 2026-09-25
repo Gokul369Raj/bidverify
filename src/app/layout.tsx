@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import LoadingScreen from "@/components/LoadingScreen";
 import "./globals.css";
 
 /* Noto Sans is the typeface family used across Government of India web
@@ -47,7 +48,9 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <a href="#main-content" className="skip-link">Skip to Main Content</a>
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <LoadingScreen>{children}</LoadingScreen>
+        </LanguageProvider>
       </body>
     </html>
   );

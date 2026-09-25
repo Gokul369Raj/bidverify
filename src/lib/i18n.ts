@@ -41,6 +41,8 @@ const en = {
     closeMenu: "Close menu",
     primary: "Primary",
     mobile: "Mobile",
+    dashboard: "Go to Dashboard",
+    adminCenter: "Admin Control Center",
   },
   preamble: {
     eyebrow: "About this portal",
@@ -240,6 +242,8 @@ const hi: Dict = {
     closeMenu: "मेनू बंद करें",
     primary: "मुख्य",
     mobile: "मोबाइल",
+    dashboard: "डैशबोर्ड पर जाएँ",
+    adminCenter: "व्यवस्थापक नियंत्रण केंद्र",
   },
   preamble: {
     eyebrow: "इस पोर्टल के बारे में",

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ChatBot from "@/components/ChatBot";
-import { Emblem } from "@/components/Emblem";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useSession } from "@/lib/useSession";
 import { signOut } from "@/lib/session";
 import {
@@ -94,15 +94,19 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
     window.location.href = "/";
   }
 
-  if (loading || !user) {
+  /* The edge middleware already rejects unauthenticated requests, so the dashboard
+     is safe to paint before the client-side session check returns. Blocking on it
+     used to delay mounting the children by ~1.5s and pushed every one of their data
+     fetches behind it — a serial waterfall. The shell now paints immediately. */
+  if (!loading && !user) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-[var(--navy-800)] flex items-center justify-center mx-auto mb-3 animate-pulse">
+          <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-[var(--navy-800)] flex items-center justify-center mx-auto mb-3">
             <Shield className="w-6 h-6 text-white" aria-hidden="true" />
           </div>
           <p className="text-[13px] font-medium text-[var(--foreground-secondary)]">
-            Loading your dashboard…
+            Redirecting to sign in…
           </p>
         </div>
       </div>
@@ -137,13 +141,10 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
 
         {/* Brand */}
         <div className="h-[74px] flex items-center gap-3 px-4 border-b border-white/10 shrink-0">
-          <Emblem height={40} variant="light" priority />
+          <BrandLogo size="sm" tone="inverse" href={null} />
           <div className="min-w-0 flex-1">
-            <div className="text-[15px] font-extrabold text-white leading-tight tracking-tight truncate">
-              BidGuard<span className="text-[var(--saffron-400)]"> AI</span>
-            </div>
-            <div className="text-[10px] text-white/50 leading-tight truncate">
-              {ROLE_LABELS[user.role] || user.role}
+            <div className="text-[10px] text-white/60 leading-tight truncate">
+              {user ? (ROLE_LABELS[user.role] || user.role) : "Loading…"}
             </div>
           </div>
           <button
@@ -159,7 +160,7 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
         <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Dashboard">
           {nav.map((group) => (
             <div key={group.title} className="mb-5 last:mb-0">
-              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white/60">
                 {group.title}
               </p>
               <div className="space-y-0.5">
@@ -233,7 +234,7 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
           </div>
 
           <div className="hidden xl:block text-[12.5px] text-[var(--foreground-secondary)] truncate max-w-xs">
-            {user.organization?.legalName || ROLE_LABELS[user.role]}
+            {user ? (user.organization?.legalName || ROLE_LABELS[user.role]) : "Loading…"}
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
@@ -243,9 +244,9 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
               className="relative p-2 text-[var(--foreground-secondary)] hover:text-[var(--navy-800)] hover:bg-[var(--navy-50)] rounded-[var(--radius)] transition-colors"
             >
               <Bell className="w-[18px] h-[18px]" strokeWidth={2} aria-hidden="true" />
-              {(user.unreadNotifications ?? 0) > 0 && (
+              {(user?.unreadNotifications ?? 0) > 0 && (
                 <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-[var(--danger)] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
-                  {(user.unreadNotifications ?? 0) > 9 ? "9+" : user.unreadNotifications}
+                  {(user?.unreadNotifications ?? 0) > 9 ? "9+" : user?.unreadNotifications}
                 </span>
               )}
             </Link>
@@ -257,10 +258,10 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
                 className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-[var(--radius)] hover:bg-[var(--navy-50)] transition-colors cursor-pointer"
               >
                 <span className="w-8 h-8 bg-[var(--navy-800)] rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0">
-                  {user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  {(user?.name || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                 </span>
                 <span className="hidden sm:block text-[13.5px] font-semibold text-[var(--foreground)] max-w-[110px] truncate">
-                  {user.name.split(" ")[0]}
+                  {(user?.name || "Account").split(" ")[0]}
                 </span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-[var(--foreground-tertiary)] transition-transform ${menuOpen ? "rotate-180" : ""}`}
@@ -273,9 +274,9 @@ export function AppShell({ children, role }: { children: React.ReactNode; role: 
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                   <div className="absolute right-0 top-[50px] w-[272px] bg-white border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] z-50 overflow-hidden">
                     <div className="px-4 py-3.5 bg-[var(--navy-50)] border-b border-[var(--border)]">
-                      <div className="text-[13.5px] font-bold text-[var(--navy-800)] truncate">{user.name}</div>
-                      <div className="text-[12px] text-[var(--foreground-tertiary)] truncate mt-0.5">{user.email}</div>
-                      <span className="inline-block mt-2 badge badge-navy">{ROLE_LABELS[user.role]}</span>
+                      <div className="text-[13.5px] font-bold text-[var(--navy-800)] truncate">{user?.name ?? "Loading…"}</div>
+                      <div className="text-[12px] text-[var(--foreground-tertiary)] truncate mt-0.5">{user?.email ?? ""}</div>
+                      <span className="inline-block mt-2 badge badge-navy">{user ? ROLE_LABELS[user.role] : "…"}</span>
                     </div>
                     <div className="py-1.5">
                       <Link

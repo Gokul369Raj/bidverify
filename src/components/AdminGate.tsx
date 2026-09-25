@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Emblem } from "@/components/Emblem";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Lock, Loader2, ShieldCheck, AlertCircle, ArrowLeft, Landmark } from "lucide-react";
 
 const ADMIN_PASSWORD = "admin@bidverify2026";
@@ -64,10 +64,10 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         <div className="w-full max-w-[430px]">
           <div className="text-center mb-7 on-dark">
             <div className="inline-flex items-center justify-center mb-5">
-              <Emblem height={68} variant="light" />
+              <BrandLogo size="lg" tone="inverse" href={null} />
             </div>
             <h1 className="text-[23px] font-extrabold text-white tracking-tight">
-              BidGuard<span className="text-[var(--saffron-400)]"> AI</span> — Control Center
+              Admin Control Center
             </h1>
             <p className="text-[13px] text-white/55 mt-2 leading-relaxed">
               Administrative access is restricted. Enter the control-centre

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Emblem } from "@/components/Emblem";
+import { BrandMark } from "@/components/BrandMark";
 import {
   X, Loader2, ArrowRight, ArrowLeft, Lock, Mail, AlertCircle,
   CircleCheck, ShieldCheck, UserRound, Building2, Check,
@@ -110,7 +110,7 @@ export default function LoginModal({ open, onClose }: Props) {
       >
         {/* Header */}
         <div className="relative bg-[var(--navy-800)] px-6 py-5 flex items-center gap-3.5">
-          <Emblem height={40} variant="light" />
+          <BrandMark size={40} tone="inverse" />
           <div className="min-w-0 flex-1">
             <h2 className="text-[17px] font-extrabold text-white leading-tight truncate">{heading}</h2>
             <p className="text-[11.5px] text-white/60 leading-tight mt-0.5">

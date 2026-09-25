@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getSessionClient } from "@/lib/session";
 import Link from "next/link";
 import {
   FileText, Clock, AlertTriangle, Upload, ArrowRight,
@@ -27,7 +28,7 @@ export default function BidderDashboard() {
   useEffect(() => {
     Promise.all([
       fetch("/api/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: "", limit: 10 }) }).then((r) => r.json()),
-      fetch("/api/auth/me").then((r) => r.json()),
+      getSessionClient().then((u) => ({ ok: Boolean(u), data: u })),
       fetch("/api/notifications").then((r) => r.json()),
       fetch("/api/bidder/organization").then((r) => r.json()).catch(() => ({ ok: false })),
       fetch("/api/bidder/vault").then((r) => r.json()).catch(() => ({ ok: false })),

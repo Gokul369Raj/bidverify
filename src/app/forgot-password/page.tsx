@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Emblem } from "@/components/Emblem";
+import { BrandLogo } from "@/components/BrandLogo";
 import AuthPanel from "@/components/AuthPanel";
 import {
   Mail, Loader2, CircleCheck, ArrowLeft, AlertCircle, KeyRound, Lock, Info,
@@ -80,10 +80,7 @@ function ForgotPasswordForm() {
 
         <div className="lg:hidden flex items-center justify-between gap-3 px-5 py-3.5 bg-white border-b border-[var(--border)]">
           <Link href="/" className="flex items-center gap-2.5">
-            <Emblem height={34} />
-            <span className="text-[15px] font-extrabold text-[var(--navy-800)] tracking-tight">
-              BidGuard<span className="text-[var(--saffron-500)]"> AI</span>
-            </span>
+            <BrandLogo size="sm" href={null} />
           </Link>
           <Link href="/login" className="text-[12.5px] font-semibold text-[var(--foreground-secondary)] hover:text-[var(--navy-800)]">
             Sign in

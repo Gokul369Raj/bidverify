@@ -1,48 +1,47 @@
-import { BrandMark } from "@/components/BrandMark";
+import Image from "next/image";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Wordmark — brand mark + "BidGuard AI" + descriptor line.
+   Bidguard AI wordmark lockup — the supplied mark plus "Bidguard AI", already
+   composed into a single asset so the mark and the lettering always keep their
+   designed proportions.
+
+   Two variants: navy-on-transparent for light surfaces, white-on-transparent
+   for navy surfaces.
    ───────────────────────────────────────────────────────────────────────── */
+
+const RATIO = 489 / 132; // master width / height
 
 export function BrandLogo({
   size = "md",
   tone = "solid",
   href = "/",
-  descriptor = "Bid Compliance Platform",
 }: {
   size?: "sm" | "md" | "lg";
   tone?: "solid" | "inverse";
   href?: string | null;
-  descriptor?: string | null;
 }) {
-  const markSize = size === "sm" ? 30 : size === "lg" ? 52 : 40;
-  const title = size === "sm" ? "text-[15px]" : size === "lg" ? "text-[24px]" : "text-[19px]";
-  const sub = size === "sm" ? "text-[9px]" : size === "lg" ? "text-[11.5px]" : "text-[10px]";
+  const height = size === "sm" ? 30 : size === "lg" ? 52 : 40;
+  const w = Math.round(height * RATIO);
+  const src = tone === "inverse"
+    ? "/images/brand/logo-horizontal-inverse.png"
+    : "/images/brand/logo-horizontal.png";
 
-  const titleColor = tone === "inverse" ? "text-white" : "text-[var(--navy-800)]";
-  const subColor = tone === "inverse" ? "text-white/60" : "text-[var(--foreground-tertiary)]";
-  const rule = tone === "inverse" ? "border-white/20" : "border-[var(--border)]";
-
-  const inner = (
-    <span className="flex items-center gap-2.5">
-      <BrandMark size={markSize} tone={tone} />
-      <span className={`flex flex-col border-l pl-2.5 ${rule}`}>
-        <span className={`font-extrabold leading-none tracking-tight ${title} ${titleColor}`}>
-          BidGuard<span className="text-[var(--saffron-500)]"> AI</span>
-        </span>
-        {descriptor && (
-          <span className={`${sub} leading-tight font-medium mt-1 ${subColor}`}>
-            {descriptor}
-          </span>
-        )}
-      </span>
-    </span>
+  const img = (
+    <Image
+      src={src}
+      alt="Bidguard AI"
+      width={w}
+      height={height}
+      priority
+      sizes={`${w}px`}
+      style={{ height, width: w }}
+    />
   );
 
-  if (!href) return inner;
+  if (!href) return img;
   return (
-    <a href={href} className="shrink-0" aria-label="BidGuard AI — home">
-      {inner}
+    <a href={href} className="shrink-0 inline-flex items-center" aria-label="Bidguard AI — home">
+      {img}
     </a>
   );
 }

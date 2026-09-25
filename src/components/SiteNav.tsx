@@ -99,6 +99,11 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
                   </button>
                 </>
               )}
+              {!loading && user && (user as any).role !== "BIDDER" && (
+                <Link href="/admin" className="hidden sm:inline-flex btn btn-navy btn-sm">
+                  Admin Control Center
+                </Link>
+              )}
               <UserNav />
 
               <button
@@ -157,6 +162,17 @@ export default function SiteNav({ onSignIn }: { onSignIn: () => void }) {
                   >
                     {t("nav.login")}
                   </button>
+                </div>
+              )}
+              {!loading && user && (user as any).role !== "BIDDER" && (
+                <div className="pt-2 border-t border-[var(--border)]">
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex justify-center btn btn-navy w-full"
+                  >
+                    Admin Control Center
+                  </Link>
                 </div>
               )}
             </nav>

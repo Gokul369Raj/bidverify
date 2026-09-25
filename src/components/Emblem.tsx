@@ -48,7 +48,6 @@ export function BrandLockup({
       size={size}
       tone={variant === "light" ? "inverse" : "solid"}
       href={href}
-      descriptor="Bid Compliance Platform"
     />
   );
 }

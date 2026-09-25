@@ -91,7 +91,7 @@ export default function GovtTopBar({
               onClick={() => setLang("hi")}
               lang="hi"
               aria-pressed={lang === "hi"}
-              className={lang === "hi" ? "font-bold text-white" : "hover:underline"}
+              className={`cursor-pointer ${lang === "hi" ? "font-bold text-white" : "hover:underline"}`}
             >
               हिन्दी
             </button>
@@ -101,7 +101,7 @@ export default function GovtTopBar({
               onClick={() => setLang("en")}
               lang="en"
               aria-pressed={lang === "en"}
-              className={lang === "en" ? "font-bold text-white" : "hover:underline"}
+              className={`cursor-pointer ${lang === "en" ? "font-bold text-white" : "hover:underline"}`}
             >
               English
             </button>

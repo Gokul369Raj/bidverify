@@ -43,6 +43,16 @@ export default function LandingPage() {
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [showLogin, setShowLogin] = useState(false);
 
+  /* "Go to Dashboard" routes to the role-correct dashboard. Officer-side roles
+     land on /officer, everyone else on /bidder. */
+  const OFFICER_ROLES = new Set([
+    "SUPER_ADMIN", "PROCUREMENT_OFFICER", "BID_EVALUATION_OFFICER",
+    "COMPLIANCE_REVIEWER", "AUDITOR", "SYSTEM_ADMIN",
+  ]);
+  const dashboardHref = loggedInUser
+    ? OFFICER_ROLES.has(loggedInUser.role) ? "/officer" : "/bidder"
+    : "/login";
+
   useEffect(() => {
     fetch("/api/public/stats")
       .then((r) => r.json())
@@ -102,9 +112,6 @@ export default function LandingPage() {
             {/* Left — message */}
             <div className="lg:col-span-7 on-dark rise">
               <div className="flex items-center gap-3 mb-6">
-                <span className="inline-flex items-center justify-center rounded-[var(--radius)] bg-white p-1.5 shadow-[var(--shadow-sm)]">
-                  <BrandMark size={30} />
-                </span>
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-[11.5px] font-bold uppercase tracking-[0.1em] text-white">
                   <Landmark className="w-3.5 h-3.5 text-[var(--saffron-400)]" aria-hidden="true" />
                   {t("hero.badge")}
@@ -123,12 +130,18 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-wrap gap-3 mb-9">
-                <Link href="/register" className="btn btn-saffron btn-lg">
-                  {t("hero.ctaBidder")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                </Link>
-                <Link href="/login" className="btn btn-white btn-lg">
+                {loggedInUser ? (
+                  <Link href={dashboardHref} className="btn btn-saffron btn-lg">
+                    {t("nav.dashboard")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                ) : (
+                  <Link href="/register" className="btn btn-saffron btn-lg">
+                    {t("hero.ctaBidder")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  </Link>
+                )}
+                <Link href="/admin" className="btn btn-white btn-lg">
                   <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-                  {t("hero.ctaOfficer")}
+                  {t("nav.adminCenter")}
                 </Link>
               </div>
 
@@ -389,7 +402,7 @@ export default function LandingPage() {
                   <span className="w-9 h-9 rounded-[var(--radius)] bg-[var(--saffron-500)]/18 border border-[var(--saffron-500)]/30 flex items-center justify-center shrink-0">
                     <s.icon className="w-[18px] h-[18px] text-[var(--saffron-400)]" aria-hidden="true" />
                   </span>
-                  <span className="text-[10.5px] font-bold tracking-[0.1em] text-white/40 uppercase">
+                  <span className="text-[10.5px] font-bold tracking-[0.1em] text-white/65 uppercase">
                     {t("pipeline.step")} {String(i + 1).padStart(2, "0")}
                   </span>
                 </div>
@@ -533,18 +546,25 @@ export default function LandingPage() {
           </h2>
           <p className="text-[15px] text-white/65 max-w-2xl mx-auto mb-9">{t("cta.body")}</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="btn btn-saffron btn-lg">
-              {t("cta.primary")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
-            <Link href="/login" className="btn btn-white btn-lg">
-              {t("cta.secondary")}
+            {loggedInUser ? (
+              <Link href={dashboardHref} className="btn btn-saffron btn-lg">
+                {t("nav.dashboard")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            ) : (
+              <Link href="/register" className="btn btn-saffron btn-lg">
+                {t("cta.primary")} <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            )}
+            <Link href="/admin" className="btn btn-white btn-lg">
+              <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+              {t("nav.adminCenter")}
             </Link>
           </div>
 
           {!loggedInUser && (
-            <p className="text-[12.5px] text-white/40 mt-7">
+            <p className="text-[12.5px] text-white/60 mt-7">
               {t("cta.alreadyRegistered")}{" "}
-              <button onClick={() => setShowLogin(true)} className="text-[var(--saffron-400)] font-semibold hover:underline cursor-pointer">
+              <button onClick={() => setShowLogin(true)} className="text-[var(--saffron-500)] font-semibold hover:underline cursor-pointer">
                 {t("cta.signIn")}
               </button>
             </p>

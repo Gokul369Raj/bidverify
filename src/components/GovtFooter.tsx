@@ -73,7 +73,7 @@ export default function GovtFooter() {
       {/* ── Official partner strip ── */}
       <div className="border-b border-white/10">
         <div className="container py-7">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/45 text-center mb-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/60 text-center mb-5">
             {t("footer.integratedTitle")}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
@@ -99,9 +99,9 @@ export default function GovtFooter() {
           {/* Identity */}
           <div className="lg:col-span-4">
             <div className="mb-4">
-              <BrandLogo size="md" tone="inverse" href={null} descriptor={null} />
+              <BrandLogo size="md" tone="inverse" href={null} />
             </div>
-            <p className="text-[13px] text-white/55 leading-relaxed max-w-sm mb-5">
+            <p className="text-[13px] text-white/65 leading-relaxed max-w-sm mb-5">
               {t("footer.blurb")}
             </p>
             <ul className="space-y-2.5 text-[13px] text-white/60">
@@ -156,7 +156,7 @@ export default function GovtFooter() {
           />
           <div className="text-center sm:text-left">
             <p className="text-[13px] font-semibold text-white/85">{t("footer.sihTitle")}</p>
-            <p className="text-[12px] text-white/50 mt-1 leading-relaxed">{t("footer.sihBody")}</p>
+            <p className="text-[12px] text-white/65 mt-1 leading-relaxed">{t("footer.sihBody")}</p>
           </div>
           <a
             href="https://sih.gov.in/"
@@ -173,10 +173,10 @@ export default function GovtFooter() {
       <div className="tricolor-bar" />
       <div className="border-t border-white/10">
         <div className="container py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-[12px] text-white/45 text-center md:text-left">
+          <p className="text-[12px] text-white/60 text-center md:text-left">
             © {new Date().getFullYear()} BidGuard AI. {t("footer.rights")}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] text-white/45">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] text-white/60">
             <span>
               {t("footer.lastUpdated")}: {updated}
             </span>
@@ -189,8 +189,8 @@ export default function GovtFooter() {
           </div>
         </div>
         <div className="container pb-6">
-          <p className="text-[11px] leading-relaxed text-white/30 text-center md:text-left max-w-4xl">
-            <strong className="font-semibold text-white/40">{t("footer.disclaimerLabel")}</strong>{" "}
+          <p className="text-[11px] leading-relaxed text-white/65 text-center md:text-left max-w-4xl">
+            <strong className="font-semibold text-white/65">{t("footer.disclaimerLabel")}</strong>{" "}
             {t("footer.disclaimerBody")}
           </p>
         </div>
